@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#0a1510">
+  <meta name="description" content="Master Applications of Digital Electronics with interactive real-time quiz and live Supabase leaderboard.">
+  <title>Circuit Check — Applications of Digital Electronics Quiz</title>
+  
+  <!-- Modern Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Supabase JS CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- Confetti library for high scores -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Background Cyber Circuit Traces -->
+  <div class="circuit-bg" aria-hidden="true"></div>
+
+  <main class="app-container">
+    <!-- Top App Navigation / Auth Header -->
+    <header class="app-header">
+      <div class="brand">
+        <div class="brand__icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="4" y="4" width="16" height="16" rx="2"/>
+            <rect x="9" y="9" width="6" height="6"/>
+            <path d="M9 1v3M15 1v3M9 20v3M15 20v3M20 9h3M20 14h3M1 9h3M1 14h3"/>
+          </svg>
+        </div>
+        <div>
+          <h1 class="brand__title">Circuit Check</h1>
+          <span class="brand__subtitle">Applications of Digital Electronics</span>
+        </div>
+      </div>
+
+      <div class="header-controls">
+        <!-- Audio Synth Toggle -->
+        <button id="soundToggleBtn" class="icon-btn" title="Toggle Sound FX" aria-label="Toggle sound">
+          <span id="soundIcon">🔊</span>
+        </button>
+
+        <!-- View Leaderboard Toggle -->
+        <button id="viewLeaderboardBtn" class="pill-btn" aria-label="View Leaderboard">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+            <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/>
+            <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/>
+            <path d="M4 22h16"/>
+            <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/>
+            <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/>
+            <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/>
+          </svg>
+          <span class="pill-text">Rankings</span>
+        </button>
+
+        <!-- User / Auth Profile -->
+        <div id="authContainer" class="auth-box">
+          <button id="googleSignInBtn" class="google-btn" title="Sign in with Google">
+            <svg width="18" height="18" viewBox="0 0 24 24">
+              <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.66-5.17 3.66-9.17Z"/>
+              <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.26v3.15C3.25 21.36 7.33 24 12 24Z"/>
+              <path fill="#FBBC05" d="M5.28 14.27a7.2 7.2 0 0 1 0-4.54V6.58H1.26a11.96 11.96 0 0 0 0 10.84l4.02-3.15Z"/>
+              <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.33 0 3.25 2.64 1.26 6.58l4.02 3.15c.95-2.83 3.6-4.98 6.72-4.98Z"/>
+            </svg>
+            <span>Sign In</span>
+          </button>
+
+          <div id="userProfileBadge" class="user-badge hidden">
+            <img id="userAvatarImg" class="user-avatar" src="" alt="User Avatar" />
+            <div class="user-info-text">
+              <span id="userNameTxt" class="user-name">Engineer</span>
+              <button id="signOutBtn" class="sign-out-link">Sign out</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Quiz Progression Trace Bar -->
+    <div class="hud-bar">
+      <div class="hud-item">
+        <span class="hud-label">PROGRESS</span>
+        <span id="qCountBadge" class="hud-value">1 / 25</span>
+      </div>
+      <div class="hud-item timer-item">
+        <span class="hud-label">TIME</span>
+        <span id="timerBadge" class="hud-value timer-glow">00:00</span>
+      </div>
+      <div class="hud-item">
+        <span class="hud-label">SCORE</span>
+        <span id="currentScoreBadge" class="hud-value text-accent">0 pts</span>
+      </div>
+    </div>
+
+    <div class="trace-container" title="Quiz Progress">
+      <div class="trace" id="trace"></div>
+    </div>
+
+    <!-- Main Content Area: Stages -->
+    <section class="stage-card" id="stage">
+      <div class="initial-loader">
+        <div class="spinner"></div>
+        <p class="loading">Powering up logic arrays…</p>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Live Leaderboard Modal -->
+  <div id="leaderboardModal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="leaderboardTitle">
+    <div class="modal-window">
+      <div class="modal-header">
+        <div class="modal-title-wrap">
+          <div class="trophy-glow">🏆</div>
+          <div>
+            <h2 id="leaderboardTitle" class="modal-title">Live Global Rankings</h2>
+            <p class="modal-subtitle">Real-time marks for Applications of Digital Electronics</p>
+          </div>
+        </div>
+        <button id="closeLeaderboardBtn" class="close-btn" aria-label="Close leaderboard">&times;</button>
+      </div>
+
+      <!-- Live badge -->
+      <div class="live-indicator-bar">
+        <span class="pulse-dot"></span>
+        <span class="live-text">Supabase Realtime Sync Active</span>
+      </div>
+
+      <div class="leaderboard-table-wrap">
+        <div id="leaderboardList" class="leaderboard-list">
+          <div class="loading-state">
+            <div class="spinner"></div>
+            <span>Fetching rank telemetry…</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button id="closeModalActionBtn" class="btn btn-secondary full-width">Back to Quiz</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sign In Prompt Modal (for saving marks or custom name) -->
+  <div id="authPromptModal" class="modal-backdrop hidden" role="dialog" aria-modal="true">
+    <div class="modal-window modal-compact">
+      <div class="modal-header">
+        <h2 class="modal-title">Save Your Mark to Leaderboard</h2>
+        <button id="closeAuthPromptBtn" class="close-btn">&times;</button>
+      </div>
+      <div class="auth-modal-content">
+        <p class="modal-desc">Sign in with Google to tie your score and rank to your Google profile, or submit with your custom engineer callsign.</p>
+        
+        <button id="modalGoogleSignInBtn" class="btn btn-google full-width">
+          <svg width="18" height="18" viewBox="0 0 24 24">
+            <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.66-5.17 3.66-9.17Z"/>
+            <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.26v3.15C3.25 21.36 7.33 24 12 24Z"/>
+            <path fill="#FBBC05" d="M5.28 14.27a7.2 7.2 0 0 1 0-4.54V6.58H1.26a11.96 11.96 0 0 0 0 10.84l4.02-3.15Z"/>
+            <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.33 0 3.25 2.64 1.26 6.58l4.02 3.15c.95-2.83 3.6-4.98 6.72-4.98Z"/>
+          </svg>
+          Continue with Google
+        </button>
+
+        <div class="auth-divider"><span>OR ENTER CALLSIGN</span></div>
+
+        <div class="guest-name-input-group">
+          <input type="text" id="guestCallsignInput" placeholder="Engineer Callsign (e.g. Neo_VHDL)" maxlength="24" class="text-input" />
+          <button id="guestSubmitBtn" class="btn btn-primary full-width">Save with Callsign</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
