@@ -59,10 +59,11 @@
         <!-- Student Account Badge (When Authenticated) -->
         <div id="studentProfileBadge" class="student-pill hidden">
           <div class="student-avatar" id="studentAvatarInitial">S</div>
-          <div class="student-meta">
+          <div class="student-meta" id="headerProfileTrigger" role="button" tabindex="0" title="Click to open User Dashboard" style="cursor: pointer;">
             <span class="student-name" id="headerStudentName">Student</span>
             <span class="student-dept-tag" id="headerStudentDept">ECE</span>
           </div>
+          <button id="headerDashboardBtn" class="header-icon-btn-sm" title="Edit Profile & Dashboard" aria-label="Open dashboard">⚙️</button>
           <button id="logoutBtn" class="text-logout-btn" title="Sign out">Log out</button>
         </div>
 
@@ -172,9 +173,20 @@
                 </div>
               </div>
 
-              <div class="form-group">
-                <label for="regEmail">College Email</label>
-                <input type="email" id="regEmail" placeholder="name@college.edu" required class="input-field" />
+              <div class="form-row-2">
+                <div class="form-group">
+                  <label for="regYear">Year of Study</label>
+                  <select id="regYear" required class="input-field select-field">
+                    <option value="1st Year">1st Year</option>
+                    <option value="2nd Year" selected>2nd Year</option>
+                    <option value="3rd Year">3rd Year</option>
+                    <option value="4th Year">4th Year</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="regEmail">College Email</label>
+                  <input type="email" id="regEmail" placeholder="name@college.edu" required class="input-field" />
+                </div>
               </div>
 
               <div class="form-group">
@@ -195,16 +207,19 @@
           <div id="authenticatedEntryBox" class="entry-state-box hidden">
             <div class="user-greeting-card">
               <div class="user-avatar-lg" id="welcomeAvatar">J</div>
-              <div class="greeting-details">
+              <div class="greeting-details" style="flex: 1;">
                 <span class="greeting-pre">Welcome back,</span>
                 <h3 class="greeting-name" id="welcomeStudentName">Student Name</h3>
-                <span class="greeting-badge" id="welcomeStudentDept">Department: ECE</span>
+                <span class="greeting-badge" id="welcomeStudentDept">Department: ECE • 2nd Year</span>
               </div>
+              <button id="openDashboardFromHeroBtn" class="pill-outline-btn" style="padding: 6px 12px; font-size: 0.8rem;" title="Edit details">
+                ✏️ Edit Profile
+              </button>
             </div>
 
             <div class="entry-cta-stack">
               <button id="authenticatedEnterQuizBtn" class="btn btn-main btn-lg full-width">
-                <span>Enter Quiz Now</span>
+                <span>Enter Quiz (25 Min Timer)</span>
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
               </button>
               
@@ -365,6 +380,65 @@
           <button type="button" id="enterAsGuestFromModalBtn" class="btn btn-secondary full-width">Enter Quiz as Guest</button>
         </div>
       </div>
+    </div>
+  <!-- ================= USER DASHBOARD MODAL ================= -->
+  <div id="userDashboardModal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="dashboardModalTitle">
+    <div class="modal-card modal-card-sm">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <div class="trophy-badge" style="background: var(--bg-subtle); border-radius: 50%; width: 38px; height: 38px; display:flex; align-items:center; justify-content:center;">👤</div>
+          <div>
+            <h3 id="dashboardModalTitle" class="modal-heading">Student Profile Dashboard</h3>
+            <p class="modal-sub">View and update your academic details</p>
+          </div>
+        </div>
+        <button id="closeDashboardBtn" class="modal-close-btn" aria-label="Close dashboard">&times;</button>
+      </div>
+
+      <form id="editProfileForm" class="auth-form-body" style="padding: 20px 24px;">
+        <div class="form-group">
+          <label for="editProfileName">Full Name</label>
+          <input type="text" id="editProfileName" placeholder="e.g. John Doe" required class="input-field" />
+        </div>
+
+        <div class="form-group">
+          <label for="editProfileDept">Department</label>
+          <select id="editProfileDept" required class="input-field select-field">
+            <option value="ECE">ECE (Electronics & Comm)</option>
+            <option value="EEE">EEE (Electrical & Electronics)</option>
+            <option value="CSE">CSE (Computer Science)</option>
+            <option value="IT">IT (Information Technology)</option>
+            <option value="AI & DS">AI & Data Science</option>
+            <option value="Mechanical">Mechanical Engineering</option>
+            <option value="Robotics & Auto">Robotics & Automation</option>
+            <option value="Other">Other Department</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="editProfileYear">Year of Study</label>
+          <select id="editProfileYear" required class="input-field select-field">
+            <option value="1st Year">1st Year</option>
+            <option value="2nd Year">2nd Year</option>
+            <option value="3rd Year">3rd Year</option>
+            <option value="4th Year">4th Year</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="editProfileEmail">Registered Email</label>
+          <input type="email" id="editProfileEmail" readonly class="input-field" style="background: var(--bg-subtle); cursor: not-allowed; opacity: 0.8;" />
+        </div>
+
+        <div id="profileSaveMsg" class="form-alert hidden" style="background: var(--state-success-bg); border-color: var(--state-success-border); color: var(--state-success);"></div>
+
+        <div class="form-actions-stack">
+          <button type="submit" id="saveProfileBtn" class="btn btn-main full-width">
+            <span>Save Profile Changes</span>
+          </button>
+          <button type="button" id="closeDashboardSecondaryBtn" class="btn btn-secondary full-width">Cancel</button>
+        </div>
+      </form>
     </div>
   </div>
 

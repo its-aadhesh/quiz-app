@@ -73,9 +73,27 @@ const leaderboardBody = document.getElementById('leaderboardBody');
 // Guest Submission Modal
 const guestCallsignModal = document.getElementById('guestCallsignModal');
 const closeGuestModalBtn = document.getElementById('closeGuestModalBtn');
-const guestRecordForm = document.getElementById('guestRecordForm');
+const regYear = document.getElementById('regYear');
 const guestStudentName = document.getElementById('guestStudentName');
 const guestStudentDept = document.getElementById('guestStudentDept');
+
+// User Dashboard Modal Elements
+const userDashboardModal = document.getElementById('userDashboardModal');
+const closeDashboardBtn = document.getElementById('closeDashboardBtn');
+const closeDashboardSecondaryBtn = document.getElementById('closeDashboardSecondaryBtn');
+const editProfileForm = document.getElementById('editProfileForm');
+const editProfileName = document.getElementById('editProfileName');
+const editProfileDept = document.getElementById('editProfileDept');
+const editProfileYear = document.getElementById('editProfileYear');
+const editProfileEmail = document.getElementById('editProfileEmail');
+const profileSaveMsg = document.getElementById('profileSaveMsg');
+const headerDashboardBtn = document.getElementById('headerDashboardBtn');
+const headerProfileTrigger = document.getElementById('headerProfileTrigger');
+const openDashboardFromHeroBtn = document.getElementById('openDashboardFromHeroBtn');
+
+// Quiz Timer Configuration: 25 Minutes (1500 seconds)
+const QUIZ_TIME_LIMIT_SECONDS = 25 * 60;
+let remainingSeconds = QUIZ_TIME_LIMIT_SECONDS;
 
 // 1. Audio Synthesizer (Natural subtle chimes)
 function playChime(freq = 440, type = 'sine', duration = 0.12) {
@@ -184,10 +202,12 @@ async function fetchStudentProfile(user) {
       // Fallback to user metadata
       const name = user.user_metadata?.full_name || user.user_metadata?.name || user.email?.split('@')[0] || 'Student';
       const department = user.user_metadata?.department || 'ECE';
+      const year = user.user_metadata?.year || '2nd Year';
       currentStudentProfile = {
         id: user.id,
         name: name,
         department: department,
+        year: year,
         email: user.email
       };
 
@@ -196,7 +216,8 @@ async function fetchStudentProfile(user) {
         id: user.id,
         email: user.email,
         name: name,
-        department: department
+        department: department,
+        year: year
       }]);
     }
   } catch (err) {
@@ -205,6 +226,7 @@ async function fetchStudentProfile(user) {
       id: user.id,
       name: user.user_metadata?.full_name || 'Student',
       department: user.user_metadata?.department || 'General',
+      year: user.user_metadata?.year || '2nd Year',
       email: user.email
     };
   }
@@ -213,6 +235,7 @@ async function fetchStudentProfile(user) {
 function renderAuthenticatedUI() {
   const name = currentStudentProfile?.name || 'Student';
   const dept = currentStudentProfile?.department || 'ECE';
+  const year = currentStudentProfile?.year || '2nd Year';
   const initial = name.charAt(0).toUpperCase() || 'S';
 
   // Header
@@ -226,7 +249,7 @@ function renderAuthenticatedUI() {
   guestEntryBox.classList.add('hidden');
   authenticatedEntryBox.classList.remove('hidden');
   welcomeStudentName.textContent = name;
-  welcomeStudentDept.textContent = `Department: ${dept}`;
+  welcomeStudentDept.textContent = `Department: ${dept} • ${year}`;
   welcomeAvatar.textContent = initial;
 }
 
@@ -274,6 +297,7 @@ async function handleRegister(e) {
   regErrorMsg.classList.add('hidden');
   const name = regName.value.trim();
   const department = regDept.value;
+  const year = regYear ? regYear.value : '2nd Year';
   const email = regEmail.value.trim();
   const password = regPassword.value;
 
@@ -292,7 +316,8 @@ async function handleRegister(e) {
     options: {
       data: {
         full_name: name,
-        department: department
+        department: department,
+        year: year
       }
     }
   });
@@ -311,14 +336,16 @@ async function handleRegister(e) {
       id: data.user.id,
       email: data.user.email,
       name: name,
-      department: department
+      department: department,
+      year: year
     }]);
 
     currentStudentProfile = {
       id: data.user.id,
       email: data.user.email,
       name: name,
-      department: department
+      department: department,
+      year: year
     };
 
     startQuiz();
@@ -378,7 +405,6 @@ function startQuiz() {
 
   currentQuestionIndex = 0;
   studentAnswers = {};
-  elapsedSeconds = 0;
 
   // Set student info in quiz HUD
   const name = currentStudentProfile?.name || 'Guest Student';
@@ -403,13 +429,31 @@ function showFrontPage() {
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
+// 25 Minutes Countdown Timer Logic
 function startTimer() {
   stopTimer();
+  remainingSeconds = QUIZ_TIME_LIMIT_SECONDS;
   elapsedSeconds = 0;
+  quizTimer.classList.remove('timer-warning');
   updateTimerUI();
+
   timerInterval = setInterval(() => {
+    remainingSeconds--;
     elapsedSeconds++;
     updateTimerUI();
+
+    // Pulse warning when 3 minutes remain
+    if (remainingSeconds <= 180 && remainingSeconds > 0) {
+      quizTimer.classList.add('timer-warning');
+    }
+
+    // Time ends at 25 minutes -> auto submit
+    if (remainingSeconds <= 0) {
+      stopTimer();
+      quizTimer.textContent = '00:00';
+      alert('Time is up! Your 25 minutes have ended. Submitting your quiz now.');
+      submitQuizEvaluation();
+    }
   }, 1000);
 }
 
@@ -418,8 +462,9 @@ function stopTimer() {
 }
 
 function updateTimerUI() {
-  const m = Math.floor(elapsedSeconds / 60).toString().padStart(2, '0');
-  const s = (elapsedSeconds % 60).toString().padStart(2, '0');
+  const displaySecs = Math.max(0, remainingSeconds);
+  const m = Math.floor(displaySecs / 60).toString().padStart(2, '0');
+  const s = (displaySecs % 60).toString().padStart(2, '0');
   quizTimer.textContent = `${m}:${s}`;
 }
 
@@ -533,7 +578,12 @@ async function submitQuizEvaluation() {
 
     // If student is signed in, save directly to database
     if (currentUser) {
-      await recordScoreToDatabase(resultData, currentStudentProfile.name, currentStudentProfile.department);
+      await recordScoreToDatabase(
+        resultData, 
+        currentStudentProfile.name, 
+        currentStudentProfile.department,
+        currentStudentProfile.year
+      );
     } else {
       // Prompt guest student for name & department
       pendingSubmissionData = resultData;
@@ -613,7 +663,7 @@ function renderResultsView(data) {
 }
 
 // 7. Record Score & Leaderboard
-async function recordScoreToDatabase(data, name, department) {
+async function recordScoreToDatabase(data, name, department, year = '1st Year') {
   if (!supabaseClient) return;
 
   try {
@@ -623,6 +673,7 @@ async function recordScoreToDatabase(data, name, department) {
         student_id: currentUser?.id || null,
         user_name: name || 'Student',
         department: department || 'General',
+        year: year || '1st Year',
         user_email: currentUser?.email || null,
         score: data.score,
         total_questions: data.total,
@@ -845,6 +896,94 @@ function setupEventListeners() {
     enterAsGuestFromModalBtn.addEventListener('click', () => {
       googleSetupModal.classList.add('hidden');
       startQuiz();
+    });
+  }
+
+  // User Dashboard Modal listeners
+  function openDashboard() {
+    if (!currentUser || !currentStudentProfile) {
+      alert('Please sign in to access your user dashboard.');
+      return;
+    }
+    editProfileName.value = currentStudentProfile.name || '';
+    editProfileDept.value = currentStudentProfile.department || 'ECE';
+    editProfileYear.value = currentStudentProfile.year || '2nd Year';
+    editProfileEmail.value = currentStudentProfile.email || currentUser.email || '';
+    profileSaveMsg.classList.add('hidden');
+    userDashboardModal.classList.remove('hidden');
+  }
+
+  function closeDashboard() {
+    userDashboardModal.classList.add('hidden');
+  }
+
+  if (headerDashboardBtn) headerDashboardBtn.addEventListener('click', openDashboard);
+  if (headerProfileTrigger) headerProfileTrigger.addEventListener('click', openDashboard);
+  if (openDashboardFromHeroBtn) openDashboardFromHeroBtn.addEventListener('click', openDashboard);
+  if (closeDashboardBtn) closeDashboardBtn.addEventListener('click', closeDashboard);
+  if (closeDashboardSecondaryBtn) closeDashboardSecondaryBtn.addEventListener('click', closeDashboard);
+
+  userDashboardModal.addEventListener('click', (e) => {
+    if (e.target === userDashboardModal) closeDashboard();
+  });
+
+  // Handle saving edited user details
+  if (editProfileForm) {
+    editProfileForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const newName = editProfileName.value.trim();
+      const newDept = editProfileDept.value;
+      const newYear = editProfileYear.value;
+
+      if (!newName) return;
+
+      const saveBtn = document.getElementById('saveProfileBtn');
+      saveBtn.disabled = true;
+      saveBtn.innerHTML = '<span>Saving Changes…</span>';
+
+      try {
+        // 1. Update student_profiles table in Supabase
+        const { error } = await supabaseClient
+          .from('student_profiles')
+          .upsert([{
+            id: currentUser.id,
+            email: currentUser.email,
+            name: newName,
+            department: newDept,
+            year: newYear
+          }]);
+
+        if (error) throw error;
+
+        // 2. Also update auth user metadata if possible
+        await supabaseClient.auth.updateUser({
+          data: {
+            full_name: newName,
+            department: newDept,
+            year: newYear
+          }
+        });
+
+        // 3. Update local state
+        currentStudentProfile.name = newName;
+        currentStudentProfile.department = newDept;
+        currentStudentProfile.year = newYear;
+
+        renderAuthenticatedUI();
+
+        profileSaveMsg.textContent = '✓ Profile details updated successfully!';
+        profileSaveMsg.classList.remove('hidden');
+
+        setTimeout(() => {
+          closeDashboard();
+        }, 900);
+      } catch (err) {
+        console.error('Error updating profile:', err);
+        alert('Failed to update details: ' + (err.message || 'Unknown error'));
+      } finally {
+        saveBtn.disabled = false;
+        saveBtn.innerHTML = '<span>Save Profile Changes</span>';
+      }
     });
   }
 }

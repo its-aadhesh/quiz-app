@@ -257,10 +257,37 @@ body::before {
   text-overflow: ellipsis;
 }
 
-.student-dept-tag {
-  font-size: 0.65rem;
-  font-weight: 600;
-  color: var(--accent-terracotta);
+.header-icon-btn-sm {
+  background: var(--bg-subtle);
+  border: 1px solid var(--border-subtle);
+  font-size: 13px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  line-height: 1;
+  padding: 0;
+}
+
+.header-icon-btn-sm:hover {
+  background: var(--border-subtle);
+  transform: rotate(30deg);
+}
+
+.quiz-timer-bubble.timer-warning {
+  background: var(--state-danger-bg);
+  border-color: var(--state-danger-border);
+  color: var(--state-danger);
+  animation: pulseWarning 1.2s infinite;
+}
+
+@keyframes pulseWarning {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
 }
 
 .text-logout-btn {
