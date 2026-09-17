@@ -3,53 +3,49 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <meta name="theme-color" content="#0a1510">
-  <meta name="description" content="Master Applications of Digital Electronics with interactive real-time quiz and live Supabase leaderboard.">
-  <title>Circuit Check — Applications of Digital Electronics Quiz</title>
-  
-  <!-- Modern Fonts -->
+  <meta name="theme-color" content="#FAF8F5">
+  <meta name="description" content="Applications of Digital Electronics Academic Quiz & Real-Time Student Leaderboard.">
+  <title>Applications of Digital Electronics — Student Quiz</title>
+
+  <!-- Google Fonts: Editorial & Humanist typography -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-  
-  <!-- Supabase JS CDN -->
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Fraunces:ital,opsz,wght@0,9..144,600;0,9..144,700;1,9..144,600&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+
+  <!-- Supabase CDN & Confetti -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <!-- Confetti library for high scores -->
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
 
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-  <!-- Background Cyber Circuit Traces -->
-  <div class="circuit-bg" aria-hidden="true"></div>
-
-  <main class="app-container">
-    <!-- Top App Navigation / Auth Header -->
-    <header class="app-header">
-      <div class="brand">
-        <div class="brand__icon">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="4" y="4" width="16" height="16" rx="2"/>
-            <rect x="9" y="9" width="6" height="6"/>
-            <path d="M9 1v3M15 1v3M9 20v3M15 20v3M20 9h3M20 14h3M1 9h3M1 14h3"/>
+  <!-- App Header -->
+  <header class="site-header">
+    <div class="header-inner">
+      <div class="logo-area" id="homeLogoBtn" role="button" tabindex="0" title="Return to Home">
+        <div class="logo-badge">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/>
+            <path d="M6 6h10"/>
+            <path d="M6 10h10"/>
           </svg>
         </div>
         <div>
-          <h1 class="brand__title">Circuit Check</h1>
-          <span class="brand__subtitle">Applications of Digital Electronics</span>
+          <div class="site-title">Digital Electronics</div>
+          <div class="site-subtitle">Academic Evaluation Portal</div>
         </div>
       </div>
 
-      <div class="header-controls">
-        <!-- Audio Synth Toggle -->
-        <button id="soundToggleBtn" class="icon-btn" title="Toggle Sound FX" aria-label="Toggle sound">
-          <span id="soundIcon">🔊</span>
+      <div class="header-actions">
+        <!-- Sound Effect Toggle -->
+        <button id="soundToggleBtn" class="header-icon-btn" title="Toggle audio feedback" aria-label="Toggle sound">
+          <span id="soundIcon">🔔</span>
         </button>
 
-        <!-- View Leaderboard Toggle -->
-        <button id="viewLeaderboardBtn" class="pill-btn" aria-label="View Leaderboard">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+        <!-- Leaderboard Trigger -->
+        <button id="viewLeaderboardBtn" class="pill-outline-btn">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
             <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/>
             <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/>
             <path d="M4 22h16"/>
@@ -57,124 +53,311 @@
             <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/>
             <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/>
           </svg>
-          <span class="pill-text">Rankings</span>
+          <span>Leaderboard</span>
         </button>
 
-        <!-- User / Auth Profile -->
-        <div id="authContainer" class="auth-box">
-          <button id="googleSignInBtn" class="google-btn" title="Sign in with Google">
-            <svg width="18" height="18" viewBox="0 0 24 24">
-              <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.66-5.17 3.66-9.17Z"/>
-              <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.26v3.15C3.25 21.36 7.33 24 12 24Z"/>
-              <path fill="#FBBC05" d="M5.28 14.27a7.2 7.2 0 0 1 0-4.54V6.58H1.26a11.96 11.96 0 0 0 0 10.84l4.02-3.15Z"/>
-              <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.33 0 3.25 2.64 1.26 6.58l4.02 3.15c.95-2.83 3.6-4.98 6.72-4.98Z"/>
-            </svg>
-            <span>Sign In</span>
-          </button>
+        <!-- Student Account Badge (When Authenticated) -->
+        <div id="studentProfileBadge" class="student-pill hidden">
+          <div class="student-avatar" id="studentAvatarInitial">S</div>
+          <div class="student-meta">
+            <span class="student-name" id="headerStudentName">Student</span>
+            <span class="student-dept-tag" id="headerStudentDept">ECE</span>
+          </div>
+          <button id="logoutBtn" class="text-logout-btn" title="Sign out">Log out</button>
+        </div>
 
-          <div id="userProfileBadge" class="user-badge hidden">
-            <img id="userAvatarImg" class="user-avatar" src="" alt="User Avatar" />
-            <div class="user-info-text">
-              <span id="userNameTxt" class="user-name">Engineer</span>
-              <button id="signOutBtn" class="sign-out-link">Sign out</button>
+        <!-- Sign In Button (When Guest) -->
+        <button id="headerSignInBtn" class="pill-primary-btn">
+          Sign In
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="page-container">
+
+    <!-- ================= VIEW 1: FRONT LANDING PAGE ================= -->
+    <section id="frontPageView" class="view-panel">
+      
+      <div class="hero-card">
+        <div class="hero-chip">
+          <span class="pulse-dot"></span>
+          25 Industry & Theory Application Questions
+        </div>
+
+        <h1 class="hero-heading">
+          Applications of <span class="highlight-text">Digital Electronics</span>
+        </h1>
+        <p class="hero-desc">
+          Test your comprehension of real-world electronic systems: automotive ECUs, avionics buses, biomedical DSP, industrial PLCs, and modern VLSI architectures.
+        </p>
+
+        <!-- Interactive Department Badges -->
+        <div class="topics-ribbon">
+          <span class="topic-tag">Automotive ECUs</span>
+          <span class="topic-tag">Industrial PLCs</span>
+          <span class="topic-tag">Medical DSP</span>
+          <span class="topic-tag">Avionics Buses</span>
+          <span class="topic-tag">5G & IoT</span>
+          <span class="topic-tag">FPGA & CMOS</span>
+        </div>
+
+        <!-- Central Action Card / Auth Options -->
+        <div class="entry-card">
+          <!-- State A: Not logged in -->
+          <div id="guestEntryBox" class="entry-state-box">
+            <div class="auth-tabs">
+              <button class="auth-tab-btn active" id="tabLoginBtn">Sign In</button>
+              <button class="auth-tab-btn" id="tabRegisterBtn">Create Student Account</button>
+            </div>
+
+            <!-- Login Form -->
+            <form id="loginForm" class="auth-form-body">
+              <div class="form-group">
+                <label for="loginEmail">Student Email</label>
+                <input type="email" id="loginEmail" placeholder="student@college.edu" required class="input-field" />
+              </div>
+              <div class="form-group">
+                <label for="loginPassword">Password</label>
+                <input type="password" id="loginPassword" placeholder="••••••••" required class="input-field" />
+              </div>
+              
+              <div id="authErrorMsg" class="form-alert hidden"></div>
+
+              <div class="form-actions-stack">
+                <button type="submit" class="btn btn-main full-width">
+                  <span>Sign In & Enter Quiz</span>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                </button>
+
+                <div class="divider-text"><span>OR CONTINUE WITH</span></div>
+
+                <button type="button" id="googleOAuthBtn" class="btn btn-white full-width">
+                  <svg width="18" height="18" viewBox="0 0 24 24">
+                    <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.66-5.17 3.66-9.17Z"/>
+                    <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.26v3.15C3.25 21.36 7.33 24 12 24Z"/>
+                    <path fill="#FBBC05" d="M5.28 14.27a7.2 7.2 0 0 1 0-4.54V6.58H1.26a11.96 11.96 0 0 0 0 10.84l4.02-3.15Z"/>
+                    <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.33 0 3.25 2.64 1.26 6.58l4.02 3.15c.95-2.83 3.6-4.98 6.72-4.98Z"/>
+                  </svg>
+                  <span>Google Account</span>
+                </button>
+                
+                <button type="button" id="guestEnterBtn" class="text-link-btn">
+                  Take quiz as Guest (Callsign entry at end)
+                </button>
+              </div>
+            </form>
+
+            <!-- Register Form -->
+            <form id="registerForm" class="auth-form-body hidden">
+              <div class="form-row-2">
+                <div class="form-group">
+                  <label for="regName">Full Name</label>
+                  <input type="text" id="regName" placeholder="e.g. John Doe" required class="input-field" />
+                </div>
+                <div class="form-group">
+                  <label for="regDept">Department</label>
+                  <select id="regDept" required class="input-field select-field">
+                    <option value="" disabled selected>Select Dept</option>
+                    <option value="ECE">ECE (Electronics & Comm)</option>
+                    <option value="EEE">EEE (Electrical & Electronics)</option>
+                    <option value="CSE">CSE (Computer Science)</option>
+                    <option value="IT">IT (Information Technology)</option>
+                    <option value="AI & DS">AI & Data Science</option>
+                    <option value="Mechanical">Mechanical Engineering</option>
+                    <option value="Robotics & Auto">Robotics & Automation</option>
+                    <option value="Other">Other Department</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="regEmail">College Email</label>
+                <input type="email" id="regEmail" placeholder="name@college.edu" required class="input-field" />
+              </div>
+
+              <div class="form-group">
+                <label for="regPassword">Create Password</label>
+                <input type="password" id="regPassword" placeholder="Minimum 6 characters" minlength="6" required class="input-field" />
+              </div>
+
+              <div id="regErrorMsg" class="form-alert hidden"></div>
+
+              <button type="submit" class="btn btn-main full-width">
+                <span>Create Student Account & Enter Quiz</span>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+              </button>
+            </form>
+          </div>
+
+          <!-- State B: Already Signed In -->
+          <div id="authenticatedEntryBox" class="entry-state-box hidden">
+            <div class="user-greeting-card">
+              <div class="user-avatar-lg" id="welcomeAvatar">J</div>
+              <div class="greeting-details">
+                <span class="greeting-pre">Welcome back,</span>
+                <h3 class="greeting-name" id="welcomeStudentName">Student Name</h3>
+                <span class="greeting-badge" id="welcomeStudentDept">Department: ECE</span>
+              </div>
+            </div>
+
+            <div class="entry-cta-stack">
+              <button id="authenticatedEnterQuizBtn" class="btn btn-main btn-lg full-width">
+                <span>Enter Quiz Now</span>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+              </button>
+              
+              <button id="switchAccountBtn" class="text-link-btn">Sign in with a different account</button>
             </div>
           </div>
         </div>
-      </div>
-    </header>
 
-    <!-- Quiz Progression Trace Bar -->
-    <div class="hud-bar">
-      <div class="hud-item">
-        <span class="hud-label">PROGRESS</span>
-        <span id="qCountBadge" class="hud-value">1 / 25</span>
-      </div>
-      <div class="hud-item timer-item">
-        <span class="hud-label">TIME</span>
-        <span id="timerBadge" class="hud-value timer-glow">00:00</span>
-      </div>
-      <div class="hud-item">
-        <span class="hud-label">SCORE</span>
-        <span id="currentScoreBadge" class="hud-value text-accent">0 pts</span>
-      </div>
-    </div>
+        <!-- Quiz Meta Features bar -->
+        <div class="quiz-info-pills">
+          <div class="info-pill-item">
+            <span class="info-icon">⏱️</span>
+            <span>Self-Timed</span>
+          </div>
+          <div class="info-pill-item">
+            <span class="info-icon">🎯</span>
+            <span>25 Total Marks</span>
+          </div>
+          <div class="info-pill-item">
+            <span class="info-icon">📊</span>
+            <span>Instant Rank Update</span>
+          </div>
+        </div>
 
-    <div class="trace-container" title="Quiz Progress">
-      <div class="trace" id="trace"></div>
-    </div>
+      </div>
 
-    <!-- Main Content Area: Stages -->
-    <section class="stage-card" id="stage">
-      <div class="initial-loader">
-        <div class="spinner"></div>
-        <p class="loading">Powering up logic arrays…</p>
+    </section>
+
+    <!-- ================= VIEW 2: ACTIVE QUIZ VIEW ================= -->
+    <section id="quizView" class="view-panel hidden">
+      
+      <!-- Quiz Status Tracker -->
+      <div class="quiz-tracker-card">
+        <div class="tracker-left">
+          <button id="exitQuizPromptBtn" class="back-link-btn" title="Leave quiz">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+            <span>Exit</span>
+          </button>
+          <div class="q-progress-text">
+            Question <strong id="currentQNum">1</strong> of <span id="totalQNum">25</span>
+          </div>
+        </div>
+
+        <div class="tracker-center">
+          <div class="quiz-timer-bubble" id="quizTimer">00:00</div>
+        </div>
+
+        <div class="tracker-right">
+          <div class="student-status-chip">
+            <span id="quizPlayerName">Student</span>
+            <span class="dept-badge" id="quizPlayerDept">ECE</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Linear Progress Line -->
+      <div class="progress-track-wrapper">
+        <div class="progress-fill-line" id="progressFillLine" style="width: 4%;"></div>
+      </div>
+
+      <!-- Question Box -->
+      <div class="question-stage-card" id="questionStage">
+        <!-- Injected dynamically by JS -->
+      </div>
+
+    </section>
+
+    <!-- ================= VIEW 3: RESULTS SCREEN ================= -->
+    <section id="resultsView" class="view-panel hidden">
+      <div class="results-card" id="resultsContainer">
+        <!-- Injected dynamically by JS -->
       </div>
     </section>
 
   </main>
 
-  <!-- Live Leaderboard Modal -->
-  <div id="leaderboardModal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="leaderboardTitle">
-    <div class="modal-window">
+  <!-- ================= LEADERBOARD MODAL ================= -->
+  <div id="leaderboardModal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="lbModalTitle">
+    <div class="modal-card">
       <div class="modal-header">
-        <div class="modal-title-wrap">
-          <div class="trophy-glow">🏆</div>
+        <div class="modal-title-group">
+          <div class="trophy-badge">🏆</div>
           <div>
-            <h2 id="leaderboardTitle" class="modal-title">Live Global Rankings</h2>
-            <p class="modal-subtitle">Real-time marks for Applications of Digital Electronics</p>
+            <h2 id="lbModalTitle" class="modal-heading">Student Leaderboard</h2>
+            <p class="modal-sub">Applications of Digital Electronics Academic Standings</p>
           </div>
         </div>
-        <button id="closeLeaderboardBtn" class="close-btn" aria-label="Close leaderboard">&times;</button>
+        <button id="closeLeaderboardBtn" class="modal-close-btn" aria-label="Close dialog">&times;</button>
       </div>
 
-      <!-- Live badge -->
-      <div class="live-indicator-bar">
-        <span class="pulse-dot"></span>
-        <span class="live-text">Supabase Realtime Sync Active</span>
+      <div class="realtime-status-banner">
+        <span class="status-indicator-dot"></span>
+        <span>Realtime Sync: Leaderboard updates immediately upon quiz submission</span>
       </div>
 
-      <div class="leaderboard-table-wrap">
-        <div id="leaderboardList" class="leaderboard-list">
-          <div class="loading-state">
-            <div class="spinner"></div>
-            <span>Fetching rank telemetry…</span>
-          </div>
-        </div>
+      <!-- Clean Academic Table -->
+      <div class="table-responsive-wrapper">
+        <table class="academic-table" id="leaderboardTable">
+          <thead>
+            <tr>
+              <th style="width: 70px;">S.no</th>
+              <th>Name</th>
+              <th>Department</th>
+              <th style="text-align: right; width: 100px;">Score</th>
+            </tr>
+          </thead>
+          <tbody id="leaderboardBody">
+            <tr>
+              <td colspan="4" class="table-empty-cell">
+                <div class="table-loading-spinner"></div>
+                Loading latest student ranks…
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
 
       <div class="modal-footer">
-        <button id="closeModalActionBtn" class="btn btn-secondary full-width">Back to Quiz</button>
+        <button id="closeLeaderboardActionBtn" class="btn btn-secondary full-width">Close Leaderboard</button>
       </div>
     </div>
   </div>
 
-  <!-- Sign In Prompt Modal (for saving marks or custom name) -->
-  <div id="authPromptModal" class="modal-backdrop hidden" role="dialog" aria-modal="true">
-    <div class="modal-window modal-compact">
+  <!-- Guest Callsign Submission Modal (When Guest Completes Quiz) -->
+  <div id="guestCallsignModal" class="modal-overlay hidden" role="dialog" aria-modal="true">
+    <div class="modal-card modal-card-sm">
       <div class="modal-header">
-        <h2 class="modal-title">Save Your Mark to Leaderboard</h2>
-        <button id="closeAuthPromptBtn" class="close-btn">&times;</button>
+        <h3 class="modal-heading">Record Your Score</h3>
+        <button id="closeGuestModalBtn" class="modal-close-btn">&times;</button>
       </div>
-      <div class="auth-modal-content">
-        <p class="modal-desc">Sign in with Google to tie your score and rank to your Google profile, or submit with your custom engineer callsign.</p>
-        
-        <button id="modalGoogleSignInBtn" class="btn btn-google full-width">
-          <svg width="18" height="18" viewBox="0 0 24 24">
-            <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.66-5.17 3.66-9.17Z"/>
-            <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.26v3.15C3.25 21.36 7.33 24 12 24Z"/>
-            <path fill="#FBBC05" d="M5.28 14.27a7.2 7.2 0 0 1 0-4.54V6.58H1.26a11.96 11.96 0 0 0 0 10.84l4.02-3.15Z"/>
-            <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.33 0 3.25 2.64 1.26 6.58l4.02 3.15c.95-2.83 3.6-4.98 6.72-4.98Z"/>
-          </svg>
-          Continue with Google
-        </button>
-
-        <div class="auth-divider"><span>OR ENTER CALLSIGN</span></div>
-
-        <div class="guest-name-input-group">
-          <input type="text" id="guestCallsignInput" placeholder="Engineer Callsign (e.g. Neo_VHDL)" maxlength="24" class="text-input" />
-          <button id="guestSubmitBtn" class="btn btn-primary full-width">Save with Callsign</button>
+      <form id="guestRecordForm" class="auth-form-body">
+        <p class="modal-sub" style="margin-bottom: 8px;">
+          Enter your name and department so your score appears on the student leaderboard.
+        </p>
+        <div class="form-group">
+          <label for="guestStudentName">Your Name</label>
+          <input type="text" id="guestStudentName" placeholder="e.g. Alex Kumar" required class="input-field" />
         </div>
-      </div>
+        <div class="form-group">
+          <label for="guestStudentDept">Department</label>
+          <select id="guestStudentDept" required class="input-field select-field">
+            <option value="ECE" selected>ECE (Electronics & Comm)</option>
+            <option value="EEE">EEE (Electrical & Electronics)</option>
+            <option value="CSE">CSE (Computer Science)</option>
+            <option value="IT">IT (Information Technology)</option>
+            <option value="AI & DS">AI & Data Science</option>
+            <option value="Mechanical">Mechanical Engineering</option>
+            <option value="Robotics & Auto">Robotics & Automation</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+        <button type="submit" class="btn btn-main full-width">Save & View Ranking</button>
+      </form>
     </div>
   </div>
 

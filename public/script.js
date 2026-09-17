@@ -1,176 +1,399 @@
-// State Management
+// Applications of Digital Electronics Quiz & Leaderboard Controller
+// Human-crafted light theme with Student Accounts & Realtime Sync
+
 let supabaseClient = null;
 let currentUser = null;
+let currentStudentProfile = null;
 let questions = [];
-let currentIndex = 0;
-let selectedAnswers = {};
+let currentQuestionIndex = 0;
+let studentAnswers = {};
 let timerInterval = null;
 let elapsedSeconds = 0;
 let soundEnabled = true;
-let audioCtx = null;
+let audioContext = null;
 let pendingSubmissionData = null;
 
-// DOM Elements
-const stage = document.getElementById('stage');
-const traceEl = document.getElementById('trace');
-const qCountBadge = document.getElementById('qCountBadge');
-const timerBadge = document.getElementById('timerBadge');
-const currentScoreBadge = document.getElementById('currentScoreBadge');
+// DOM View Panels
+const frontPageView = document.getElementById('frontPageView');
+const quizView = document.getElementById('quizView');
+const resultsView = document.getElementById('resultsView');
+
+// Header Elements
+const homeLogoBtn = document.getElementById('homeLogoBtn');
 const soundToggleBtn = document.getElementById('soundToggleBtn');
 const soundIcon = document.getElementById('soundIcon');
 const viewLeaderboardBtn = document.getElementById('viewLeaderboardBtn');
+const headerSignInBtn = document.getElementById('headerSignInBtn');
+const studentProfileBadge = document.getElementById('studentProfileBadge');
+const headerStudentName = document.getElementById('headerStudentName');
+const headerStudentDept = document.getElementById('headerStudentDept');
+const studentAvatarInitial = document.getElementById('studentAvatarInitial');
+const logoutBtn = document.getElementById('logoutBtn');
+
+// Front Page Auth & Entry Elements
+const guestEntryBox = document.getElementById('guestEntryBox');
+const authenticatedEntryBox = document.getElementById('authenticatedEntryBox');
+const tabLoginBtn = document.getElementById('tabLoginBtn');
+const tabRegisterBtn = document.getElementById('tabRegisterBtn');
+const loginForm = document.getElementById('loginForm');
+const registerForm = document.getElementById('registerForm');
+const loginEmail = document.getElementById('loginEmail');
+const loginPassword = document.getElementById('loginPassword');
+const regName = document.getElementById('regName');
+const regDept = document.getElementById('regDept');
+const regEmail = document.getElementById('regEmail');
+const regPassword = document.getElementById('regPassword');
+const authErrorMsg = document.getElementById('authErrorMsg');
+const regErrorMsg = document.getElementById('regErrorMsg');
+const googleOAuthBtn = document.getElementById('googleOAuthBtn');
+const guestEnterBtn = document.getElementById('guestEnterBtn');
+const welcomeStudentName = document.getElementById('welcomeStudentName');
+const welcomeStudentDept = document.getElementById('welcomeStudentDept');
+const welcomeAvatar = document.getElementById('welcomeAvatar');
+const authenticatedEnterQuizBtn = document.getElementById('authenticatedEnterQuizBtn');
+const switchAccountBtn = document.getElementById('switchAccountBtn');
+
+// Quiz View Elements
+const exitQuizPromptBtn = document.getElementById('exitQuizPromptBtn');
+const currentQNum = document.getElementById('currentQNum');
+const totalQNum = document.getElementById('totalQNum');
+const quizTimer = document.getElementById('quizTimer');
+const quizPlayerName = document.getElementById('quizPlayerName');
+const quizPlayerDept = document.getElementById('quizPlayerDept');
+const progressFillLine = document.getElementById('progressFillLine');
+const questionStage = document.getElementById('questionStage');
+const resultsContainer = document.getElementById('resultsContainer');
+
+// Leaderboard Modal Elements
 const leaderboardModal = document.getElementById('leaderboardModal');
 const closeLeaderboardBtn = document.getElementById('closeLeaderboardBtn');
-const closeModalActionBtn = document.getElementById('closeModalActionBtn');
-const leaderboardList = document.getElementById('leaderboardList');
-const authPromptModal = document.getElementById('authPromptModal');
-const closeAuthPromptBtn = document.getElementById('closeAuthPromptBtn');
-const googleSignInBtn = document.getElementById('googleSignInBtn');
-const modalGoogleSignInBtn = document.getElementById('modalGoogleSignInBtn');
-const guestSubmitBtn = document.getElementById('guestSubmitBtn');
-const guestCallsignInput = document.getElementById('guestCallsignInput');
-const userProfileBadge = document.getElementById('userProfileBadge');
-const userAvatarImg = document.getElementById('userAvatarImg');
-const userNameTxt = document.getElementById('userNameTxt');
-const signOutBtn = document.getElementById('signOutBtn');
+const closeLeaderboardActionBtn = document.getElementById('closeLeaderboardActionBtn');
+const leaderboardBody = document.getElementById('leaderboardBody');
 
-// 1. Audio Synthesis (Web Audio API)
-function playTone(freq = 440, type = 'sine', duration = 0.1) {
+// Guest Submission Modal
+const guestCallsignModal = document.getElementById('guestCallsignModal');
+const closeGuestModalBtn = document.getElementById('closeGuestModalBtn');
+const guestRecordForm = document.getElementById('guestRecordForm');
+const guestStudentName = document.getElementById('guestStudentName');
+const guestStudentDept = document.getElementById('guestStudentDept');
+
+// 1. Audio Synthesizer (Natural subtle chimes)
+function playChime(freq = 440, type = 'sine', duration = 0.12) {
   if (!soundEnabled) return;
   try {
-    if (!audioCtx) {
-      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if (!audioContext) {
+      audioContext = new (window.AudioContext || window.webkitAudioContext)();
     }
-    if (audioCtx.state === 'suspended') {
-      audioCtx.resume();
+    if (audioContext.state === 'suspended') {
+      audioContext.resume();
     }
-    const osc = audioCtx.createOscillator();
-    const gain = audioCtx.createGain();
+    const osc = audioContext.createOscillator();
+    const gain = audioContext.createGain();
     osc.type = type;
-    osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-    gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+    osc.frequency.setValueAtTime(freq, audioContext.currentTime);
+    gain.gain.setValueAtTime(0.06, audioContext.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + duration);
     osc.connect(gain);
-    gain.connect(audioCtx.destination);
+    gain.connect(audioContext.destination);
     osc.start();
-    osc.stop(audioCtx.currentTime + duration);
+    osc.stop(audioContext.currentTime + duration);
   } catch (e) {
-    // Audio autostart restricted or unsupported
+    // Web audio blocked before interaction
   }
 }
 
 function playSelectSound() {
-  playTone(587.33, 'triangle', 0.08); // D5
+  playChime(523.25, 'triangle', 0.08); // C5
 }
 
 function playNextSound() {
-  playTone(880, 'sine', 0.12); // A5
+  playChime(659.25, 'sine', 0.1); // E5
 }
 
-function playVictoryFanfare() {
+function playSuccessFanfare() {
   if (!soundEnabled) return;
-  [523.25, 659.25, 783.99, 1046.50].forEach((f, idx) => {
-    setTimeout(() => playTone(f, 'sine', 0.25), idx * 110);
+  [523.25, 659.25, 783.99, 1046.50].forEach((freq, i) => {
+    setTimeout(() => playChime(freq, 'sine', 0.22), i * 90);
   });
 }
 
-// 2. Initialize App and Supabase
-async function init() {
+// 2. App Initialization
+async function initApp() {
   setupEventListeners();
 
+  // Load server config for Supabase
   try {
-    // Load config from server
     const configRes = await fetch('/api/config');
     const config = await configRes.json();
-    
     if (window.supabase && config.url && config.anonKey) {
       supabaseClient = window.supabase.createClient(config.url, config.anonKey);
-      setupSupabaseAuth();
-      setupSupabaseRealtime();
+      await initSupabaseAuth();
+      setupRealtimeLeaderboard();
     }
   } catch (err) {
-    console.warn('Supabase initialization fallback:', err);
+    console.warn('Could not initialize Supabase:', err);
   }
 
   // Load questions
   try {
-    const res = await fetch('/api/questions');
-    questions = await res.json();
-    buildTrace();
-    startTimer();
-    renderQuestion();
+    const qRes = await fetch('/api/questions');
+    questions = await qRes.json();
+    totalQNum.textContent = questions.length;
   } catch (err) {
-    stage.innerHTML = `<div class="loading-state"><p>Error connecting to logic module. Please refresh.</p></div>`;
+    console.error('Failed to load questions:', err);
   }
 }
 
-// 3. Supabase Auth Setup
-function setupSupabaseAuth() {
+// 3. Supabase Auth Management
+async function initSupabaseAuth() {
   if (!supabaseClient) return;
 
-  // Check current session
-  supabaseClient.auth.getSession().then(({ data: { session } }) => {
-    updateUserAuthUI(session?.user || null);
-  });
+  const { data: { session } } = await supabaseClient.auth.getSession();
+  await handleAuthChange(session?.user || null);
 
-  // Listen to auth changes
-  supabaseClient.auth.onAuthStateChange((event, session) => {
-    updateUserAuthUI(session?.user || null);
-    if (session?.user && pendingSubmissionData) {
-      // Auto-save pending score if user signed in after quiz finished
-      saveScoreToLeaderboard(pendingSubmissionData);
-      pendingSubmissionData = null;
-      authPromptModal.classList.add('hidden');
-    }
+  supabaseClient.auth.onAuthStateChange(async (event, session) => {
+    await handleAuthChange(session?.user || null);
   });
 }
 
-function updateUserAuthUI(user) {
+async function handleAuthChange(user) {
   currentUser = user;
   if (user) {
-    googleSignInBtn.classList.add('hidden');
-    userProfileBadge.classList.remove('hidden');
-    const name = user.user_metadata?.full_name || user.user_metadata?.name || user.email?.split('@')[0] || 'Engineer';
-    const avatar = user.user_metadata?.avatar_url || user.user_metadata?.picture || `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(name)}`;
-    userNameTxt.textContent = name;
-    userAvatarImg.src = avatar;
+    // Fetch student profile or metadata
+    await fetchStudentProfile(user);
+    renderAuthenticatedUI();
   } else {
-    googleSignInBtn.classList.remove('hidden');
-    userProfileBadge.classList.add('hidden');
+    currentStudentProfile = null;
+    renderGuestUI();
   }
 }
 
-async function signInWithGoogle() {
+async function fetchStudentProfile(user) {
+  if (!supabaseClient || !user) return;
+  
+  try {
+    const { data, error } = await supabaseClient
+      .from('student_profiles')
+      .select('*')
+      .eq('id', user.id)
+      .single();
+
+    if (data) {
+      currentStudentProfile = data;
+    } else {
+      // Fallback to user metadata
+      const name = user.user_metadata?.full_name || user.user_metadata?.name || user.email?.split('@')[0] || 'Student';
+      const department = user.user_metadata?.department || 'ECE';
+      currentStudentProfile = {
+        id: user.id,
+        name: name,
+        department: department,
+        email: user.email
+      };
+
+      // Ensure profile row exists
+      await supabaseClient.from('student_profiles').upsert([{
+        id: user.id,
+        email: user.email,
+        name: name,
+        department: department
+      }]);
+    }
+  } catch (err) {
+    console.warn('Profile fetch warning:', err);
+    currentStudentProfile = {
+      id: user.id,
+      name: user.user_metadata?.full_name || 'Student',
+      department: user.user_metadata?.department || 'General',
+      email: user.email
+    };
+  }
+}
+
+function renderAuthenticatedUI() {
+  const name = currentStudentProfile?.name || 'Student';
+  const dept = currentStudentProfile?.department || 'ECE';
+  const initial = name.charAt(0).toUpperCase() || 'S';
+
+  // Header
+  headerSignInBtn.classList.add('hidden');
+  studentProfileBadge.classList.remove('hidden');
+  headerStudentName.textContent = name;
+  headerStudentDept.textContent = dept;
+  studentAvatarInitial.textContent = initial;
+
+  // Front page entry
+  guestEntryBox.classList.add('hidden');
+  authenticatedEntryBox.classList.remove('hidden');
+  welcomeStudentName.textContent = name;
+  welcomeStudentDept.textContent = `Department: ${dept}`;
+  welcomeAvatar.textContent = initial;
+}
+
+function renderGuestUI() {
+  headerSignInBtn.classList.remove('hidden');
+  studentProfileBadge.classList.add('hidden');
+  guestEntryBox.classList.remove('hidden');
+  authenticatedEntryBox.classList.add('hidden');
+}
+
+// 4. Auth Actions: Email / Password / Google
+async function handleLogin(e) {
+  e.preventDefault();
+  authErrorMsg.classList.add('hidden');
+  const email = loginEmail.value.trim();
+  const password = loginPassword.value;
+
   if (!supabaseClient) {
-    alert('Database connection is not ready. Please try again in a moment.');
+    showError(authErrorMsg, 'Backend database is connecting. Please wait a moment.');
     return;
   }
+
+  const submitBtn = loginForm.querySelector('button[type="submit"]');
+  submitBtn.disabled = true;
+  submitBtn.innerHTML = '<span>Verifying credentials…</span>';
+
+  const { data, error } = await supabaseClient.auth.signInWithPassword({
+    email,
+    password
+  });
+
+  submitBtn.disabled = false;
+  submitBtn.innerHTML = `<span>Sign In & Enter Quiz</span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>`;
+
+  if (error) {
+    showError(authErrorMsg, error.message || 'Invalid email or password.');
+  } else {
+    // Successfully signed in, start quiz
+    startQuiz();
+  }
+}
+
+async function handleRegister(e) {
+  e.preventDefault();
+  regErrorMsg.classList.add('hidden');
+  const name = regName.value.trim();
+  const department = regDept.value;
+  const email = regEmail.value.trim();
+  const password = regPassword.value;
+
+  if (!supabaseClient) {
+    showError(regErrorMsg, 'Database not ready. Please try again in a moment.');
+    return;
+  }
+
+  const submitBtn = registerForm.querySelector('button[type="submit"]');
+  submitBtn.disabled = true;
+  submitBtn.innerHTML = '<span>Creating Student Account…</span>';
+
+  const { data, error } = await supabaseClient.auth.signUp({
+    email,
+    password,
+    options: {
+      data: {
+        full_name: name,
+        department: department
+      }
+    }
+  });
+
+  submitBtn.disabled = false;
+  submitBtn.innerHTML = `<span>Create Student Account & Enter Quiz</span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>`;
+
+  if (error) {
+    showError(regErrorMsg, error.message || 'Registration failed.');
+    return;
+  }
+
+  if (data.user) {
+    // Insert student profile row
+    await supabaseClient.from('student_profiles').upsert([{
+      id: data.user.id,
+      email: data.user.email,
+      name: name,
+      department: department
+    }]);
+
+    currentStudentProfile = {
+      id: data.user.id,
+      email: data.user.email,
+      name: name,
+      department: department
+    };
+
+    startQuiz();
+  }
+}
+
+async function handleGoogleSignIn() {
+  if (!supabaseClient) return;
+
   const { error } = await supabaseClient.auth.signInWithOAuth({
     provider: 'google',
     options: {
       redirectTo: window.location.origin
     }
   });
+
   if (error) {
-    alert('Google Sign-in Error: ' + error.message);
+    // Show friendly, clear notice if Google OAuth is not yet toggled on in Supabase
+    showError(authErrorMsg, `Google Sign-In is not currently enabled in the Supabase Dashboard (${error.message}). Please create a student account or sign in with your email & password above!`);
   }
 }
 
-async function signOut() {
+async function handleLogout() {
   if (supabaseClient) {
     await supabaseClient.auth.signOut();
   }
-  updateUserAuthUI(null);
+  showFrontPage();
 }
 
-// 4. Timer Handling
-function startTimer() {
-  if (timerInterval) clearInterval(timerInterval);
+function showError(el, message) {
+  el.textContent = message;
+  el.classList.remove('hidden');
+}
+
+// 5. Quiz Navigation & Engine
+function startQuiz() {
+  if (questions.length === 0) {
+    alert('Quiz questions are loading, please try again in a second.');
+    return;
+  }
+
+  currentQuestionIndex = 0;
+  studentAnswers = {};
   elapsedSeconds = 0;
-  updateTimerDisplay();
+
+  // Set student info in quiz HUD
+  const name = currentStudentProfile?.name || 'Guest Student';
+  const dept = currentStudentProfile?.department || 'General';
+  quizPlayerName.textContent = name;
+  quizPlayerDept.textContent = dept;
+
+  // Switch view
+  frontPageView.classList.add('hidden');
+  resultsView.classList.add('hidden');
+  quizView.classList.remove('hidden');
+
+  startTimer();
+  renderQuestion();
+}
+
+function showFrontPage() {
+  stopTimer();
+  quizView.classList.add('hidden');
+  resultsView.classList.add('hidden');
+  frontPageView.classList.remove('hidden');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function startTimer() {
+  stopTimer();
+  elapsedSeconds = 0;
+  updateTimerUI();
   timerInterval = setInterval(() => {
     elapsedSeconds++;
-    updateTimerDisplay();
+    updateTimerUI();
   }, 1000);
 }
 
@@ -178,130 +401,101 @@ function stopTimer() {
   if (timerInterval) clearInterval(timerInterval);
 }
 
-function updateTimerDisplay() {
-  const mins = Math.floor(elapsedSeconds / 60).toString().padStart(2, '0');
-  const secs = (elapsedSeconds % 60).toString().padStart(2, '0');
-  timerBadge.textContent = `${mins}:${secs}`;
+function updateTimerUI() {
+  const m = Math.floor(elapsedSeconds / 60).toString().padStart(2, '0');
+  const s = (elapsedSeconds % 60).toString().padStart(2, '0');
+  quizTimer.textContent = `${m}:${s}`;
 }
 
-// 5. Quiz Trace / Progress Bar
-function buildTrace() {
-  traceEl.innerHTML = '';
-  questions.forEach((_, idx) => {
-    const node = document.createElement('div');
-    node.className = 'trace__node';
-    node.id = `trace-node-${idx}`;
-    traceEl.appendChild(node);
-  });
-  updateTrace();
-}
-
-function updateTrace() {
-  const nodes = traceEl.querySelectorAll('.trace__node');
-  nodes.forEach((node, i) => {
-    node.classList.toggle('done', i < currentIndex);
-    node.classList.toggle('current', i === currentIndex);
-  });
-  qCountBadge.textContent = `${currentIndex + 1} / ${questions.length}`;
-}
-
-// 6. Render Questions
 function renderQuestion() {
-  updateTrace();
-  const q = questions[currentIndex];
-  const alreadyChosen = selectedAnswers[q.id];
+  const q = questions[currentQuestionIndex];
+  const chosen = studentAnswers[q.id];
 
-  stage.innerHTML = `
-    <div class="q-header">
-      <span class="q-topic-tag">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
-          <circle cx="12" cy="12" r="10"/>
-        </svg>
-        Digital Electronics App
-      </span>
-      <span style="font-size: 11px; color: var(--cream-dim); font-family: var(--font-mono);">
-        Q${currentIndex + 1}
-      </span>
+  currentQNum.textContent = currentQuestionIndex + 1;
+  const progressPercent = ((currentQuestionIndex + 1) / questions.length) * 100;
+  progressFillLine.style.width = `${progressPercent}%`;
+
+  const optionLetters = ['A', 'B', 'C', 'D'];
+  const optionsHtml = q.options.map((opt, idx) => `
+    <div class="option-tile ${chosen === opt.id ? 'selected' : ''}" data-qid="${q.id}" data-optid="${opt.id}">
+      <span class="option-key-badge">${optionLetters[idx] || opt.id.toUpperCase()}</span>
+      <span class="option-content-text">${opt.text}</span>
+    </div>
+  `).join('');
+
+  questionStage.innerHTML = `
+    <div class="q-topic-header">
+      <span class="q-badge">Digital Electronics Application</span>
+      <span class="q-marks-indicator">1 Mark</span>
     </div>
 
-    <h2 class="q-prompt">${q.prompt}</h2>
+    <h2 class="question-text">${q.prompt}</h2>
 
-    <div class="options-list" id="optionsList"></div>
+    <div class="options-stack" id="optionsStack">
+      ${optionsHtml}
+    </div>
 
-    <div class="nav-row">
-      <button class="btn btn-secondary" id="prevBtn" ${currentIndex === 0 ? 'disabled style="opacity:0.3; pointer-events:none;"' : ''}>
-        ← Back
+    <div class="quiz-nav-row">
+      <button class="btn btn-secondary" id="quizPrevBtn" ${currentQuestionIndex === 0 ? 'disabled style="opacity:0.4;"' : ''}>
+        ← Previous
       </button>
-      <button class="btn btn-primary" id="nextBtn" ${!alreadyChosen ? 'disabled' : ''}>
-        ${currentIndex === questions.length - 1 ? 'Submit Circuit Test ⚡' : 'Next Question →'}
+
+      <button class="btn btn-main" id="quizNextBtn" ${!chosen ? 'disabled style="opacity:0.45; cursor:not-allowed;"' : ''}>
+        ${currentQuestionIndex === questions.length - 1 ? 'Complete & Submit Quiz ⚡' : 'Next Question →'}
       </button>
     </div>
   `;
 
-  const optionsContainer = document.getElementById('optionsList');
-  const optionKeys = ['A', 'B', 'C', 'D'];
+  // Attach option click listeners
+  const tiles = questionStage.querySelectorAll('.option-tile');
+  tiles.forEach(tile => {
+    tile.addEventListener('click', () => {
+      playSelectSound();
+      const qid = tile.dataset.qid;
+      const optid = tile.dataset.optid;
+      studentAnswers[qid] = optid;
 
-  q.options.forEach((opt, idx) => {
-    const btn = document.createElement('button');
-    btn.className = 'option-btn' + (alreadyChosen === opt.id ? ' selected' : '');
-    btn.innerHTML = `
-      <span class="option-key">${optionKeys[idx] || opt.id.toUpperCase()}</span>
-      <span class="option-text">${opt.text}</span>
-    `;
-    btn.addEventListener('click', () => {
-      selectOption(q.id, opt.id);
+      tiles.forEach(t => t.classList.remove('selected'));
+      tile.classList.add('selected');
+
+      const nextBtn = document.getElementById('quizNextBtn');
+      if (nextBtn) {
+        nextBtn.disabled = false;
+        nextBtn.style.opacity = '1';
+        nextBtn.style.cursor = 'pointer';
+      }
     });
-    optionsContainer.appendChild(btn);
   });
 
-  document.getElementById('nextBtn').addEventListener('click', handleNextAction);
-  const prevBtn = document.getElementById('prevBtn');
-  if (prevBtn) {
-    prevBtn.addEventListener('click', handlePrevAction);
-  }
+  document.getElementById('quizNextBtn').addEventListener('click', handleNextStep);
+  const prevBtn = document.getElementById('quizPrevBtn');
+  if (prevBtn) prevBtn.addEventListener('click', handlePrevStep);
 }
 
-function selectOption(questionId, optionId) {
-  playSelectSound();
-  selectedAnswers[questionId] = optionId;
-  
-  // Update styling
-  const buttons = stage.querySelectorAll('.option-btn');
-  const q = questions[currentIndex];
-  const selectedIdx = q.options.findIndex(o => o.id === optionId);
-  buttons.forEach((btn, i) => {
-    btn.classList.toggle('selected', i === selectedIdx);
-  });
-
-  const nextBtn = document.getElementById('nextBtn');
-  if (nextBtn) nextBtn.disabled = false;
-}
-
-function handlePrevAction() {
-  if (currentIndex > 0) {
-    currentIndex--;
+function handlePrevStep() {
+  if (currentQuestionIndex > 0) {
+    currentQuestionIndex--;
     renderQuestion();
   }
 }
 
-function handleNextAction() {
+function handleNextStep() {
   playNextSound();
-  if (currentIndex < questions.length - 1) {
-    currentIndex++;
+  if (currentQuestionIndex < questions.length - 1) {
+    currentQuestionIndex++;
     renderQuestion();
   } else {
-    submitQuiz();
+    submitQuizEvaluation();
   }
 }
 
-// 7. Submit Quiz & Result Breakdown
-async function submitQuiz() {
+// 6. Submit Evaluation & Results
+async function submitQuizEvaluation() {
   stopTimer();
-  updateTrace();
-  stage.innerHTML = `
-    <div class="initial-loader">
-      <div class="spinner"></div>
-      <p class="loading">Validating logic outputs against truth tables…</p>
+  questionStage.innerHTML = `
+    <div style="text-align:center; padding: 48px 16px;">
+      <div class="table-loading-spinner"></div>
+      <p style="color: var(--ink-secondary); font-size: 1rem;">Evaluating circuit logic marks against answer keys…</p>
     </div>
   `;
 
@@ -309,217 +503,213 @@ async function submitQuiz() {
     const res = await fetch('/api/submit', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ answers: selectedAnswers })
+      body: JSON.stringify({ answers: studentAnswers })
     });
-    const data = await res.json();
-    data.timeTaken = elapsedSeconds;
+    const resultData = await res.json();
+    resultData.timeTaken = elapsedSeconds;
 
-    currentScoreBadge.textContent = `${data.score} pts`;
-
-    if (data.percentage >= 70 && window.confetti) {
-      window.confetti({
-        particleCount: 80,
-        spread: 70,
-        origin: { y: 0.6 }
-      });
-      playVictoryFanfare();
+    if (resultData.percentage >= 70 && window.confetti) {
+      window.confetti({ particleCount: 75, spread: 65, origin: { y: 0.6 } });
+      playSuccessFanfare();
     }
 
-    renderResultsScreen(data);
+    renderResultsView(resultData);
 
-    // Auto save if user is logged in, else open prompt
+    // If student is signed in, save directly to database
     if (currentUser) {
-      saveScoreToLeaderboard(data);
+      await recordScoreToDatabase(resultData, currentStudentProfile.name, currentStudentProfile.department);
     } else {
-      pendingSubmissionData = data;
-      authPromptModal.classList.remove('hidden');
+      // Prompt guest student for name & department
+      pendingSubmissionData = resultData;
+      guestCallsignModal.classList.remove('hidden');
     }
   } catch (err) {
-    stage.innerHTML = `<div class="loading-state"><p>Error evaluating submission. Please try again.</p></div>`;
+    console.error('Quiz submission error:', err);
+    alert('Error submitting quiz. Please check connection and try again.');
   }
 }
 
-function renderResultsScreen(data) {
-  const circumference = 2 * Math.PI * 40; // r=40
-  const offset = circumference - (data.percentage / 100) * circumference;
+function renderResultsView(data) {
+  quizView.classList.add('hidden');
+  resultsView.classList.remove('hidden');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 
-  const reviewItemsHtml = data.results.map((r, i) => {
+  const explanationCards = data.results.map((r, idx) => {
     const q = questions.find(item => item.id === r.id);
     const chosenOpt = q.options.find(o => o.id === r.chosen);
     const correctOpt = q.options.find(o => o.id === r.correct);
     return `
-      <div class="review-card ${r.isCorrect ? 'correct' : 'wrong'}">
-        <div class="review-q-title">Q${i + 1}. ${q.prompt}</div>
-        <div class="review-feedback">
+      <div class="explanation-card ${r.isCorrect ? 'correct' : 'incorrect'}">
+        <div class="review-q-prompt">Q${idx + 1}. ${q.prompt}</div>
+        <div class="review-meta">
           <div><strong>Your Answer:</strong> ${chosenOpt ? chosenOpt.text : 'None'} ${r.isCorrect ? '✅' : '❌'}</div>
-          ${!r.isCorrect ? `<div><strong>Correct Logic:</strong> ${correctOpt.text}</div>` : ''}
-          <div style="margin-top: 4px; color: var(--cream-dim)"><em>${r.explanation}</em></div>
+          ${!r.isCorrect ? `<div style="color: var(--state-danger);"><strong>Correct Answer:</strong> ${correctOpt.text}</div>` : ''}
+          <div style="margin-top: 4px; color: var(--ink-secondary); font-style: italic;">${r.explanation}</div>
         </div>
       </div>
     `;
   }).join('');
 
-  stage.innerHTML = `
-    <div class="result-screen">
-      <span class="result-badge">Circuit Diagnostic Report</span>
+  resultsContainer.innerHTML = `
+    <span class="result-badge-top">Quiz Evaluation Complete</span>
 
-      <div class="score-circle-wrap">
-        <svg class="score-circle-svg" width="160" height="160" viewBox="0 0 100 100">
-          <circle class="circle-bg-path" cx="50" cy="50" r="40"/>
-          <circle class="circle-progress-path" cx="50" cy="50" r="40"
-            stroke-dasharray="${circumference}"
-            stroke-dashoffset="${offset}"/>
-        </svg>
-        <div class="score-digits">
-          <span class="score-number">${data.score}</span>
-          <span class="score-total">of ${data.total} Marks</span>
-        </div>
+    <div class="score-display-box">
+      <div class="score-big-num">${data.score}</div>
+      <div class="score-max-sub">out of ${data.total} Marks</div>
+    </div>
+
+    <div class="score-meta-grid">
+      <div class="stat-item">
+        <span class="stat-label">Accuracy</span>
+        <span class="stat-data">${data.percentage}%</span>
       </div>
-
-      <div class="score-summary-grid">
-        <div class="summary-stat">
-          <span class="stat-label">Accuracy</span>
-          <span class="stat-val">${data.percentage}%</span>
-        </div>
-        <div class="summary-stat">
-          <span class="stat-label">Time</span>
-          <span class="stat-val">${Math.floor(data.timeTaken / 60)}m ${data.timeTaken % 60}s</span>
-        </div>
-        <div class="summary-stat">
-          <span class="stat-label">Status</span>
-          <span class="stat-val" style="color: ${data.percentage >= 60 ? 'var(--neon-emerald)' : 'var(--neon-amber)'}">
-            ${data.percentage >= 80 ? 'Master' : data.percentage >= 50 ? 'Proficient' : 'Apprentice'}
-          </span>
-        </div>
+      <div class="stat-item">
+        <span class="stat-label">Time Taken</span>
+        <span class="stat-data">${Math.floor(data.timeTaken / 60)}m ${data.timeTaken % 60}s</span>
       </div>
-
-      <div class="result-actions">
-        <button id="openRankingsBtn" class="btn btn-copper full-width">
-          🏆 View Live Leaderboard
-        </button>
-        <button id="retakeQuizBtn" class="btn btn-secondary full-width">
-          🔄 Retest Circuit
-        </button>
+      <div class="stat-item">
+        <span class="stat-label">Rating</span>
+        <span class="stat-data" style="color: ${data.percentage >= 70 ? 'var(--state-success)' : 'var(--accent-terracotta)'}">
+          ${data.percentage >= 80 ? 'Distinction' : data.percentage >= 50 ? 'Passed' : 'Review Needed'}
+        </span>
       </div>
+    </div>
 
-      <div class="breakdown-section">
-        <div class="breakdown-title">Comprehensive Logic Analysis</div>
-        <div class="review-list">${reviewItemsHtml}</div>
+    <div class="results-cta-stack">
+      <button id="viewLeaderboardFromResultsBtn" class="btn btn-main full-width">
+        🏆 View Student Leaderboard
+      </button>
+      <button id="retakeQuizBtn" class="btn btn-secondary full-width">
+        🔄 Retake Quiz
+      </button>
+    </div>
+
+    <div class="explanation-accordion-wrap">
+      <h3 class="accordion-header-title">Detailed Solutions & Explanations</h3>
+      <div class="explanation-list">
+        ${explanationCards}
       </div>
     </div>
   `;
 
-  document.getElementById('retakeQuizBtn').addEventListener('click', () => {
-    currentIndex = 0;
-    selectedAnswers = {};
-    startTimer();
-    renderQuestion();
-  });
-
-  document.getElementById('openRankingsBtn').addEventListener('click', () => {
-    openLeaderboard();
-  });
+  document.getElementById('retakeQuizBtn').addEventListener('click', startQuiz);
+  document.getElementById('viewLeaderboardFromResultsBtn').addEventListener('click', openLeaderboard);
 }
 
-// 8. Save Score to Supabase
-async function saveScoreToLeaderboard(data, guestName = null) {
+// 7. Record Score & Leaderboard
+async function recordScoreToDatabase(data, name, department) {
   if (!supabaseClient) return;
-
-  const displayName = guestName || (currentUser?.user_metadata?.full_name || currentUser?.user_metadata?.name || currentUser?.email?.split('@')[0] || 'Anonymous Engineer');
-  const avatar = currentUser?.user_metadata?.avatar_url || currentUser?.user_metadata?.picture || `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(displayName)}`;
 
   try {
     const { error } = await supabaseClient
       .from('quiz_scores')
-      .insert([
-        {
-          user_id: currentUser?.id || null,
-          user_email: currentUser?.email || null,
-          user_name: displayName,
-          user_avatar: avatar,
-          score: data.score,
-          total_questions: data.total,
-          percentage: data.percentage,
-          time_taken_seconds: data.timeTaken || 0
-        }
-      ]);
+      .insert([{
+        student_id: currentUser?.id || null,
+        user_name: name || 'Student',
+        department: department || 'General',
+        user_email: currentUser?.email || null,
+        score: data.score,
+        total_questions: data.total,
+        percentage: data.percentage,
+        time_taken_seconds: data.timeTaken || 0
+      }]);
 
     if (error) {
-      console.warn('Error recording score in database:', error.message);
-    } else {
-      // Score saved, refresh leaderboard view if open
-      loadLeaderboard();
+      console.warn('Score recording notice:', error.message);
     }
   } catch (err) {
-    console.error('Failed to save score:', err);
+    console.error('Error recording score:', err);
   }
 }
 
-// 9. Live Leaderboard System & Supabase Realtime
 async function loadLeaderboard() {
   if (!supabaseClient) {
-    leaderboardList.innerHTML = `<div class="empty-state">Database not connected</div>`;
+    leaderboardBody.innerHTML = `<tr><td colspan="4" class="table-empty-cell">Database not connected</td></tr>`;
     return;
   }
 
-  leaderboardList.innerHTML = `
-    <div class="loading-state">
-      <div class="spinner"></div>
-      <span>Fetching rank telemetry…</span>
-    </div>
+  leaderboardBody.innerHTML = `
+    <tr>
+      <td colspan="4" class="table-empty-cell">
+        <div class="table-loading-spinner"></div>
+        Fetching latest academic standings…
+      </td>
+    </tr>
   `;
 
   try {
+    // Query the student_leaderboard view or quiz_scores table
     const { data, error } = await supabaseClient
-      .from('quiz_scores')
+      .from('student_leaderboard')
       .select('*')
       .order('score', { ascending: false })
-      .order('time_taken_seconds', { ascending: true })
+      .order('best_time_seconds', { ascending: true })
       .limit(50);
 
     if (error) throw error;
 
     if (!data || data.length === 0) {
-      leaderboardList.innerHTML = `<div class="empty-state">No engineer records yet. Complete a quiz to be #1!</div>`;
+      leaderboardBody.innerHTML = `<tr><td colspan="4" class="table-empty-cell">No student scores recorded yet. Complete the quiz to be the first!</td></tr>`;
       return;
     }
 
-    leaderboardList.innerHTML = data.map((entry, idx) => {
-      const rank = idx + 1;
-      const topClass = rank === 1 ? 'top-1' : rank === 2 ? 'top-2' : rank === 3 ? 'top-3' : '';
-      const isMe = currentUser && (entry.user_id === currentUser.id || entry.user_email === currentUser.email);
-      const mins = Math.floor(entry.time_taken_seconds / 60);
-      const secs = entry.time_taken_seconds % 60;
-
+    leaderboardBody.innerHTML = data.map((row, index) => {
+      const rank = index + 1;
+      const rankClass = rank === 1 ? 'rank-top-1' : rank === 2 ? 'rank-top-2' : rank === 3 ? 'rank-top-3' : '';
       return `
-        <div class="rank-row ${topClass} ${isMe ? 'highlight-me' : ''}">
-          <div class="rank-num">#${rank}</div>
-          <div class="rank-user-info">
-            <img class="rank-avatar" src="${entry.user_avatar || `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(entry.user_name)}`}" alt="Avatar" onerror="this.src='https://api.dicebear.com/7.x/bottts/svg?seed=engineer'" />
-            <div class="rank-names">
-              <span class="rank-display-name">${escapeHtml(entry.user_name)} ${isMe ? '(You)' : ''}</span>
-              <span class="rank-meta-text">${mins}m ${secs}s • ${new Date(entry.created_at).toLocaleDateString()}</span>
-            </div>
-          </div>
-          <div class="rank-scores-block">
-            <span class="rank-marks-value">${entry.score}/${entry.total_questions}</span>
-            <span class="rank-percent-badge">${entry.percentage}%</span>
-          </div>
-        </div>
+        <tr class="${rankClass}">
+          <td class="rank-cell">#${rank}</td>
+          <td class="name-cell">${escapeHtml(row.name)}</td>
+          <td><span class="dept-tag-cell">${escapeHtml(row.department || 'General')}</span></td>
+          <td class="score-cell">${row.score} / ${row.total_questions || 25}</td>
+        </tr>
       `;
     }).join('');
   } catch (err) {
-    leaderboardList.innerHTML = `<div class="empty-state">Error loading leaderboard: ${err.message}</div>`;
+    console.warn('View fallback to raw quiz_scores table:', err);
+    loadLeaderboardFallback();
   }
 }
 
-function setupSupabaseRealtime() {
+// Fallback direct table query if view permissions are restricted
+async function loadLeaderboardFallback() {
+  try {
+    const { data, error } = await supabaseClient
+      .from('quiz_scores')
+      .select('user_name, department, score, total_questions, time_taken_seconds')
+      .order('score', { ascending: false })
+      .order('time_taken_seconds', { ascending: true })
+      .limit(50);
+
+    if (error || !data || data.length === 0) {
+      leaderboardBody.innerHTML = `<tr><td colspan="4" class="table-empty-cell">No rankings recorded yet.</td></tr>`;
+      return;
+    }
+
+    leaderboardBody.innerHTML = data.map((row, idx) => {
+      const rank = idx + 1;
+      const rankClass = rank === 1 ? 'rank-top-1' : rank === 2 ? 'rank-top-2' : rank === 3 ? 'rank-top-3' : '';
+      return `
+        <tr class="${rankClass}">
+          <td class="rank-cell">#${rank}</td>
+          <td class="name-cell">${escapeHtml(row.user_name)}</td>
+          <td><span class="dept-tag-cell">${escapeHtml(row.department || 'General')}</span></td>
+          <td class="score-cell">${row.score} / ${row.total_questions || 25}</td>
+        </tr>
+      `;
+    }).join('');
+  } catch (e) {
+    leaderboardBody.innerHTML = `<tr><td colspan="4" class="table-empty-cell">Error loading leaderboard</td></tr>`;
+  }
+}
+
+function setupRealtimeLeaderboard() {
   if (!supabaseClient) return;
-  
+
   supabaseClient
-    .channel('quiz-leaderboard-changes')
-    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'quiz_scores' }, (payload) => {
-      // If modal is open, re-render immediately
+    .channel('student-leaderboard-live')
+    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'quiz_scores' }, () => {
+      // When any student submits a score, auto-refresh leaderboard if visible
       if (!leaderboardModal.classList.contains('hidden')) {
         loadLeaderboard();
       }
@@ -543,39 +733,78 @@ function escapeHtml(str) {
   })[m]);
 }
 
-// 10. Event Listeners Setup
+// 8. Event Listeners
 function setupEventListeners() {
+  homeLogoBtn.addEventListener('click', showFrontPage);
+
   soundToggleBtn.addEventListener('click', () => {
     soundEnabled = !soundEnabled;
-    soundIcon.textContent = soundEnabled ? '🔊' : '🔇';
+    soundIcon.textContent = soundEnabled ? '🔔' : '🔕';
   });
 
   viewLeaderboardBtn.addEventListener('click', openLeaderboard);
   closeLeaderboardBtn.addEventListener('click', () => leaderboardModal.classList.add('hidden'));
-  closeModalActionBtn.addEventListener('click', () => leaderboardModal.classList.add('hidden'));
-
+  closeLeaderboardActionBtn.addEventListener('click', () => leaderboardModal.classList.add('hidden'));
   leaderboardModal.addEventListener('click', (e) => {
     if (e.target === leaderboardModal) leaderboardModal.classList.add('hidden');
   });
 
-  googleSignInBtn.addEventListener('click', signInWithGoogle);
-  modalGoogleSignInBtn.addEventListener('click', signInWithGoogle);
-  signOutBtn.addEventListener('click', signOut);
-
-  closeAuthPromptBtn.addEventListener('click', () => {
-    authPromptModal.classList.add('hidden');
+  // Auth tabs
+  tabLoginBtn.addEventListener('click', () => {
+    tabLoginBtn.classList.add('active');
+    tabRegisterBtn.classList.remove('active');
+    loginForm.classList.remove('hidden');
+    registerForm.classList.add('hidden');
+    authErrorMsg.classList.add('hidden');
   });
 
-  guestSubmitBtn.addEventListener('click', () => {
-    const callsign = guestCallsignInput.value.trim() || 'Anonymous Engineer';
+  tabRegisterBtn.addEventListener('click', () => {
+    tabRegisterBtn.classList.add('active');
+    tabLoginBtn.classList.remove('active');
+    registerForm.classList.remove('hidden');
+    loginForm.classList.add('hidden');
+    regErrorMsg.classList.add('hidden');
+  });
+
+  headerSignInBtn.addEventListener('click', () => {
+    showFrontPage();
+    tabLoginBtn.click();
+    loginEmail.focus();
+  });
+
+  loginForm.addEventListener('submit', handleLogin);
+  registerForm.addEventListener('submit', handleRegister);
+  googleOAuthBtn.addEventListener('click', handleGoogleSignIn);
+  logoutBtn.addEventListener('click', handleLogout);
+
+  guestEnterBtn.addEventListener('click', startQuiz);
+  authenticatedEnterQuizBtn.addEventListener('click', startQuiz);
+
+  switchAccountBtn.addEventListener('click', handleLogout);
+
+  exitQuizPromptBtn.addEventListener('click', () => {
+    if (confirm('Are you sure you want to exit the quiz? Your current progress will be lost.')) {
+      showFrontPage();
+    }
+  });
+
+  // Guest callsign recording
+  guestRecordForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const name = guestStudentName.value.trim() || 'Guest Student';
+    const dept = guestStudentDept.value;
     if (pendingSubmissionData) {
-      saveScoreToLeaderboard(pendingSubmissionData, callsign);
+      await recordScoreToDatabase(pendingSubmissionData, name, dept);
       pendingSubmissionData = null;
     }
-    authPromptModal.classList.add('hidden');
+    guestCallsignModal.classList.add('hidden');
     openLeaderboard();
+  });
+
+  closeGuestModalBtn.addEventListener('click', () => {
+    guestCallsignModal.classList.add('hidden');
   });
 }
 
 // Start application
-init();
+initApp();
