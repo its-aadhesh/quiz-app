@@ -900,15 +900,25 @@ function setupEventListeners() {
   }
 
   // User Dashboard Modal listeners
-  function openDashboard() {
-    if (!currentUser || !currentStudentProfile) {
+  async function openDashboard() {
+    if (!currentUser) {
       alert('Please sign in to access your user dashboard.');
       return;
     }
-    editProfileName.value = currentStudentProfile.name || '';
-    editProfileDept.value = currentStudentProfile.department || 'ECE';
-    editProfileYear.value = currentStudentProfile.year || '2nd Year';
-    editProfileEmail.value = currentStudentProfile.email || currentUser.email || '';
+    // If profile wasn't loaded yet (race condition after login), re-fetch it now
+    if (!currentStudentProfile) {
+      await fetchStudentProfile(currentUser);
+    }
+    const profile = currentStudentProfile || {
+      name: currentUser.user_metadata?.full_name || currentUser.user_metadata?.name || currentUser.email?.split('@')[0] || 'Student',
+      department: currentUser.user_metadata?.department || 'ECE',
+      year: currentUser.user_metadata?.year || '2nd Year',
+      email: currentUser.email
+    };
+    editProfileName.value = profile.name || '';
+    editProfileDept.value = profile.department || 'ECE';
+    editProfileYear.value = profile.year || '2nd Year';
+    editProfileEmail.value = profile.email || currentUser.email || '';
     profileSaveMsg.classList.add('hidden');
     userDashboardModal.classList.remove('hidden');
   }
