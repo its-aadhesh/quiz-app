@@ -328,6 +328,46 @@
     </div>
   </div>
 
+  <!-- Google OAuth Setup Guide Modal -->
+  <div id="googleSetupModal" class="modal-overlay hidden" role="dialog" aria-modal="true">
+    <div class="modal-card modal-card-sm">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <div class="trophy-badge">⚙️</div>
+          <div>
+            <h3 class="modal-heading">Enable Google Authentication</h3>
+            <p class="modal-sub">1-Minute Setup in your Supabase Dashboard</p>
+          </div>
+        </div>
+        <button id="closeGoogleSetupBtn" class="modal-close-btn">&times;</button>
+      </div>
+      <div class="auth-form-body" style="padding: 20px 24px; font-size: 0.88rem; line-height: 1.5; color: var(--ink-secondary);">
+        <p style="margin-bottom: 12px; color: var(--ink-primary); font-weight: 600;">
+          Supabase rejected the Google sign-in request because Google provider is not yet switched on in your project dashboard.
+        </p>
+
+        <div style="background: var(--bg-subtle); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 12px 14px; margin-bottom: 14px;">
+          <strong style="color: var(--ink-primary); display:block; margin-bottom: 6px;">To enable Google Login:</strong>
+          <ol style="margin-left: 18px; display: flex; flex-direction: column; gap: 6px;">
+            <li>Go to <a href="https://supabase.com/dashboard/project/mbnwtelvfzjofeeviutg/auth/providers" target="_blank" style="color: var(--accent-terracotta); font-weight: 700; text-decoration: underline;">Supabase Dashboard &rarr; Auth Providers &rarr; Google</a></li>
+            <li>Toggle <strong>"Enable Google provider"</strong> to ON</li>
+            <li>Paste your <strong>Client ID</strong> and <strong>Client Secret</strong> from Google Cloud Console</li>
+            <li>Save changes.</li>
+          </ol>
+        </div>
+
+        <div style="background: var(--accent-warm-tint); border: 1px solid var(--accent-amber-light); border-radius: 8px; padding: 10px 12px; margin-bottom: 16px; color: var(--accent-terracotta); font-size: 0.82rem;">
+          💡 <strong>Tip:</strong> In the meantime, you can create a student account in 5 seconds using your name, department, email & password, or enter directly as a guest!
+        </div>
+
+        <div class="form-actions-stack">
+          <button type="button" id="switchToEmailRegisterBtn" class="btn btn-main full-width">Create Student Account (Email & Password)</button>
+          <button type="button" id="enterAsGuestFromModalBtn" class="btn btn-secondary full-width">Enter Quiz as Guest</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Guest Callsign Submission Modal (When Guest Completes Quiz) -->
   <div id="guestCallsignModal" class="modal-overlay hidden" role="dialog" aria-modal="true">
     <div class="modal-card modal-card-sm">

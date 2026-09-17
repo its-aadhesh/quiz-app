@@ -326,18 +326,34 @@ async function handleRegister(e) {
 }
 
 async function handleGoogleSignIn() {
-  if (!supabaseClient) return;
+  if (!supabaseClient) {
+    alert('Database client is loading, please try again in a moment.');
+    return;
+  }
 
-  const { error } = await supabaseClient.auth.signInWithOAuth({
-    provider: 'google',
-    options: {
-      redirectTo: window.location.origin
+  try {
+    const { data, error } = await supabaseClient.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: window.location.origin
+      }
+    });
+
+    if (error) {
+      console.warn('Google OAuth error:', error);
+      const googleSetupModal = document.getElementById('googleSetupModal');
+      if (googleSetupModal) {
+        googleSetupModal.classList.remove('hidden');
+      } else {
+        showError(authErrorMsg, `Google Sign-In is not enabled yet in your Supabase Dashboard (${error.message}). Please create a student account with your email & password above!`);
+      }
     }
-  });
-
-  if (error) {
-    // Show friendly, clear notice if Google OAuth is not yet toggled on in Supabase
-    showError(authErrorMsg, `Google Sign-In is not currently enabled in the Supabase Dashboard (${error.message}). Please create a student account or sign in with your email & password above!`);
+  } catch (err) {
+    console.error('Google OAuth unexpected error:', err);
+    const googleSetupModal = document.getElementById('googleSetupModal');
+    if (googleSetupModal) {
+      googleSetupModal.classList.remove('hidden');
+    }
   }
 }
 
@@ -804,6 +820,33 @@ function setupEventListeners() {
   closeGuestModalBtn.addEventListener('click', () => {
     guestCallsignModal.classList.add('hidden');
   });
+
+  // Google setup guide modal listeners
+  const googleSetupModal = document.getElementById('googleSetupModal');
+  const closeGoogleSetupBtn = document.getElementById('closeGoogleSetupBtn');
+  const switchToEmailRegisterBtn = document.getElementById('switchToEmailRegisterBtn');
+  const enterAsGuestFromModalBtn = document.getElementById('enterAsGuestFromModalBtn');
+
+  if (closeGoogleSetupBtn) {
+    closeGoogleSetupBtn.addEventListener('click', () => {
+      googleSetupModal.classList.add('hidden');
+    });
+  }
+
+  if (switchToEmailRegisterBtn) {
+    switchToEmailRegisterBtn.addEventListener('click', () => {
+      googleSetupModal.classList.add('hidden');
+      tabRegisterBtn.click();
+      regName.focus();
+    });
+  }
+
+  if (enterAsGuestFromModalBtn) {
+    enterAsGuestFromModalBtn.addEventListener('click', () => {
+      googleSetupModal.classList.add('hidden');
+      startQuiz();
+    });
+  }
 }
 
 // Start application
