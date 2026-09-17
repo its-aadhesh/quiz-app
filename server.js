@@ -17,307 +17,307 @@ app.get('/api/config', (req, res) => {
   res.json(SUPABASE_CONFIG);
 });
 
-// 25 Comprehensive Questions on Applications of Digital Electronics
+// 25 DPCO Questions — Digital Principles and Computer Organisation
 const QUESTIONS = [
   {
     id: 'q1',
-    prompt: 'Which component is considered the fundamental mathematical building block of digital computing circuits?',
+    prompt: 'What does the term "digital electronics" refer to?',
     options: [
-      { id: 'a', text: 'Logic gates (AND, OR, NOT, NAND)' },
-      { id: 'b', text: 'Capacitor discharge banks' },
-      { id: 'c', text: 'Analog bandpass filters' },
-      { id: 'd', text: 'Step-up transformers' }
+      { id: 'a', text: 'Electronics dealing with discrete signals (0s and 1s) instead of continuous signals' },
+      { id: 'b', text: 'Electronics that use only analog voltage levels to transmit information' },
+      { id: 'c', text: 'Electronics primarily used for audio amplification circuits' },
+      { id: 'd', text: 'Electronics based on mechanical relay switching' }
     ],
     correct: 'a',
-    explanation: 'Logic gates implement Boolean algebra and form the core building blocks for registers, ALUs, and microprocessors.'
+    explanation: 'Digital electronics uses discrete binary signals — 0 (LOW) and 1 (HIGH) — to represent and process information, unlike analog electronics which uses continuously varying signals.'
   },
   {
     id: 'q2',
-    prompt: 'In automotive digital electronics, what role does the Engine Control Unit (ECU) perform?',
+    prompt: 'Which of the following correctly lists the basic logic gates?',
     options: [
-      { id: 'a', text: 'Monitors digital & analog engine sensors to calculate precise ignition timing & fuel injection' },
-      { id: 'b', text: 'Acts solely as a mechanical valve for coolant fluid' },
-      { id: 'c', text: 'Manually switches interior lighting with bimetallic strips' },
-      { id: 'd', text: 'Converts AC directly into hydraulic line pressure' }
+      { id: 'a', text: 'AND, OR, NOT, NAND, NOR, XOR, XNOR' },
+      { id: 'b', text: 'ADD, SUB, MUL, DIV, MOD' },
+      { id: 'c', text: 'AND, OR, XOR, FLIP, LATCH' },
+      { id: 'd', text: 'NAND, NOR, BUFFER, SWITCH, RELAY' }
     ],
     correct: 'a',
-    explanation: 'The ECU is an embedded digital microcomputer running real-time software that samples sensor inputs to optimize combustion and emissions.'
+    explanation: 'The seven fundamental logic gates are AND, OR, NOT, NAND, NOR, XOR, and XNOR. These gates form the building blocks of all digital circuits.'
   },
   {
     id: 'q3',
-    prompt: 'Programmable Logic Controllers (PLCs) are ubiquitous in which engineering sector?',
+    prompt: 'What is the output of an AND gate when both inputs are 1?',
     options: [
-      { id: 'a', text: 'Industrial automation & robotic manufacturing' },
-      { id: 'b', text: 'Culinary baking recipes' },
-      { id: 'c', text: 'Acoustic violin fabrication' },
-      { id: 'd', text: 'Manual hand weaving' }
+      { id: 'a', text: '1 (High)' },
+      { id: 'b', text: '0 (Low)' },
+      { id: 'c', text: 'Undefined' },
+      { id: 'd', text: 'It depends on the supply voltage' }
     ],
     correct: 'a',
-    explanation: 'PLCs are ruggedized digital computers designed for reliable control of industrial manufacturing, conveyors, and assembly lines.'
+    explanation: 'An AND gate outputs 1 (HIGH) only when ALL its inputs are 1. With both inputs = 1, the output is 1. For any other input combination, the output is 0.'
   },
   {
     id: 'q4',
-    prompt: 'Why are digital communication signals preferred over analog signals across long distances?',
+    prompt: 'What is the output of an OR gate when both inputs are 0?',
     options: [
-      { id: 'a', text: 'Superior noise immunity and ability to regenerate clean binary pulses without accumulating error' },
-      { id: 'b', text: 'Digital signals never experience transmission delay' },
-      { id: 'c', text: 'Digital hardware requires zero electrical power' },
-      { id: 'd', text: 'Digital media cannot be compressed' }
+      { id: 'a', text: '0 (Low)' },
+      { id: 'b', text: '1 (High)' },
+      { id: 'c', text: 'Floating / High impedance' },
+      { id: 'd', text: 'Alternates between 0 and 1' }
     ],
     correct: 'a',
-    explanation: 'Digital signals distinguish between distinct binary logic levels; repeaters can regenerate pristine square waves without compounding analog line noise.'
+    explanation: 'An OR gate outputs 0 (LOW) only when ALL its inputs are 0. When both inputs are 0, the output is 0. If at least one input is 1, the output is 1.'
   },
   {
     id: 'q5',
-    prompt: 'Which medical diagnostic device heavily employs Digital Signal Processing (DSP) to filter noise and detect cardiac anomalies?',
+    prompt: 'What does a NOT gate do?',
     options: [
-      { id: 'a', text: 'Digital Electrocardiogram (ECG) monitor' },
-      { id: 'b', text: 'Mercury column thermometer' },
-      { id: 'c', text: 'Acoustic stethoscope' },
-      { id: 'd', text: 'Manual bulb sphygmomanometer' }
+      { id: 'a', text: 'It inverts the input — 0 becomes 1, and 1 becomes 0' },
+      { id: 'b', text: 'It amplifies the input signal by a factor of 2' },
+      { id: 'c', text: 'It outputs 1 only when all inputs are 1' },
+      { id: 'd', text: 'It adds two binary numbers together' }
     ],
     correct: 'a',
-    explanation: 'Modern ECGs use ADCs and DSP algorithms (like notch filters and wavelets) to eliminate muscle tremor noise and extract heart rhythm markers.'
+    explanation: 'A NOT gate (also called an inverter) has a single input and single output. It complements the input: input 0 gives output 1, and input 1 gives output 0.'
   },
   {
     id: 'q6',
-    prompt: 'In modern aircraft avionics, the glass cockpit displays and flight computers communicate over which high-reliability digital avionics bus standard?',
+    prompt: 'Which gates are called "universal gates"?',
     options: [
-      { id: 'a', text: 'MIL-STD-1553 and ARINC 429' },
-      { id: 'b', text: 'VGA Analog Cable' },
-      { id: 'c', text: 'RS-232 unshielded twisted pair' },
-      { id: 'd', text: 'Parallel Centronics printer port' }
+      { id: 'a', text: 'NAND and NOR gates' },
+      { id: 'b', text: 'AND and OR gates' },
+      { id: 'c', text: 'XOR and XNOR gates' },
+      { id: 'd', text: 'NOT and BUFFER gates' }
     ],
     correct: 'a',
-    explanation: 'ARINC 429 and MIL-STD-1553 are specialized, fault-tolerant digital communication bus architectures designed specifically for aerospace and military avionics.'
+    explanation: 'NAND and NOR are called universal gates because any other logic gate (AND, OR, NOT, XOR, etc.) can be constructed using only NAND gates or only NOR gates.'
   },
   {
     id: 'q7',
-    prompt: 'What is the primary function of an Analog-to-Digital Converter (ADC) in smart consumer audio devices (e.g. smart speakers)?',
+    prompt: 'Why are NAND and NOR gates called universal gates?',
     options: [
-      { id: 'a', text: 'Converts continuous acoustic microphone voltages into discrete digital PCM samples' },
-      { id: 'b', text: 'Amplifies direct current to power the speaker cone' },
-      { id: 'c', text: 'Modulates FM radio carrier frequencies' },
-      { id: 'd', text: 'Generates mechanical vibration inside microphones' }
+      { id: 'a', text: 'Because any logic gate can be constructed using only NAND gates or only NOR gates' },
+      { id: 'b', text: 'Because they are the fastest switching gates available' },
+      { id: 'c', text: 'Because they operate at all voltage levels universally' },
+      { id: 'd', text: 'Because they were the first gates to be invented' }
     ],
     correct: 'a',
-    explanation: 'The microphone captures analog sound waves; the ADC quantizes these variations into digital binary streams so the microprocessor can process voice commands.'
+    explanation: 'NAND and NOR gates are universal because they are functionally complete — AND, OR, and NOT can all be implemented using just NAND (or just NOR) gates, enabling any Boolean function.'
   },
   {
     id: 'q8',
-    prompt: 'What hardware technology allows engineers to prototype custom digital logic circuits rapidly using Hardware Description Languages (VHDL/Verilog)?',
+    prompt: 'What is a Multiplexer (MUX)?',
     options: [
-      { id: 'a', text: 'FPGA (Field Programmable Gate Array)' },
-      { id: 'b', text: 'Vacuum tube triodes' },
-      { id: 'c', text: 'Ferrite core memory' },
-      { id: 'd', text: 'Inductive relay matrices' }
+      { id: 'a', text: 'A digital circuit that selects one of several input signals and forwards it to a single output' },
+      { id: 'b', text: 'A circuit that splits a single input into multiple outputs simultaneously' },
+      { id: 'c', text: 'A memory element that stores one bit of data' },
+      { id: 'd', text: 'A device that converts analog signals to digital format' }
     ],
     correct: 'a',
-    explanation: 'FPGAs contain arrays of programmable logic blocks and interconnects that can be reconfigured dynamically to implement complex digital hardware architectures.'
+    explanation: 'A MUX (data selector) has 2^N data inputs, N select lines, and 1 output. The select lines determine which input is routed to the output. It is widely used in data routing and communication systems.'
   },
   {
     id: 'q9',
-    prompt: 'In digital servo motors and robotics, which digital modulation scheme is standard for precise motor speed and angle control?',
+    prompt: 'What is a Demultiplexer (DEMUX)?',
     options: [
-      { id: 'a', text: 'Pulse Width Modulation (PWM)' },
-      { id: 'b', text: 'Amplitude Modulation (AM)' },
-      { id: 'c', text: 'Frequency Modulation (FM)' },
-      { id: 'd', text: 'Phase Shift Keying (PSK)' }
+      { id: 'a', text: 'A digital circuit that takes a single input and routes it to one of several outputs' },
+      { id: 'b', text: 'A circuit that combines multiple inputs into a single output' },
+      { id: 'c', text: 'A circuit used to count clock pulses' },
+      { id: 'd', text: 'A device that stores binary data in flip-flops' }
     ],
     correct: 'a',
-    explanation: 'PWM adjusts the duty cycle of a square wave to regulate the average voltage delivered to motors without excessive thermal energy loss.'
+    explanation: 'A DEMUX (data distributor) is the reverse of a MUX. It receives 1 input and distributes it to one of 2^N outputs based on the N select lines. It is used in data distribution systems.'
   },
   {
     id: 'q10',
-    prompt: 'Which serial communication protocol uses only two lines (SDA and SCL) for digital IC inter-communication on PCBs?',
+    prompt: 'How many select lines are needed for a 4-to-1 MUX?',
     options: [
-      { id: 'a', text: 'I2C (Inter-Integrated Circuit)' },
-      { id: 'b', text: 'Ethernet RJ-45' },
-      { id: 'c', text: 'RS-485 balanced 4-wire' },
-      { id: 'd', text: 'IEEE 1284 Parallel' }
+      { id: 'a', text: '2 select lines' },
+      { id: 'b', text: '4 select lines' },
+      { id: 'c', text: '1 select line' },
+      { id: 'd', text: '3 select lines' }
     ],
     correct: 'a',
-    explanation: 'I2C is a widely used synchronous two-wire bus (Serial Data and Serial Clock) invented by Philips for connecting sensors, EEPROMs, and RTCs to microcontrollers.'
+    explanation: 'A 4-to-1 MUX has 4 inputs and needs 2 select lines (since 2² = 4). The 2 select lines can form 4 binary combinations (00, 01, 10, 11) to choose among the 4 inputs.'
   },
   {
     id: 'q11',
-    prompt: 'In digital image sensors (CMOS/CCD) inside digital cameras and smartphones, what represents the pixel data?',
+    prompt: 'How many select lines are needed for a 1-to-8 DEMUX?',
     options: [
-      { id: 'a', text: 'Digital numeric values (e.g., 8-bit to 14-bit integers) representing color channel intensities' },
-      { id: 'b', text: 'Chemical emulsion grains on celluloid film' },
-      { id: 'c', text: 'Varying mechanical pressure waves' },
-      { id: 'd', text: 'Magnetic strip flux alignments' }
+      { id: 'a', text: '3 select lines' },
+      { id: 'b', text: '8 select lines' },
+      { id: 'c', text: '2 select lines' },
+      { id: 'd', text: '4 select lines' }
     ],
     correct: 'a',
-    explanation: 'Photodiodes collect photons into electrical charges, which on-chip ADCs convert into digital binary matrices representing red, green, and blue pixels.'
+    explanation: 'A 1-to-8 DEMUX routes 1 input to one of 8 outputs, requiring 3 select lines (since 2³ = 8). The 3-bit select code (000 to 111) determines which output is active.'
   },
   {
     id: 'q12',
-    prompt: 'What type of digital memory retains its data even when power is turned off and is used in modern SSDs, USB drives, and smartphones?',
+    prompt: 'Which of the following is a real-life application of a Multiplexer (MUX)?',
     options: [
-      { id: 'a', text: 'NAND Flash Non-Volatile Memory' },
-      { id: 'b', text: 'DRAM (Dynamic RAM)' },
-      { id: 'c', text: 'SRAM (Static RAM)' },
-      { id: 'd', text: 'Cathode-Ray Storage Tube' }
+      { id: 'a', text: 'Selecting one data channel out of many for transmission (e.g., telephone exchange)' },
+      { id: 'b', text: 'Storing multi-bit binary data in sequential memory' },
+      { id: 'c', text: 'Converting decimal numbers to binary' },
+      { id: 'd', text: 'Amplifying weak analog signals before digitization' }
     ],
     correct: 'a',
-    explanation: 'NAND Flash utilizes floating-gate or charge-trap transistors to retain digital state without requiring continuous power refresh.'
+    explanation: 'MUX is used in telephone exchanges to combine multiple voice channels onto a single transmission line (Time Division Multiplexing), and in CPUs for bus sharing between multiple sources.'
   },
   {
     id: 'q13',
-    prompt: 'In modern telecommunications (4G LTE / 5G), which digital modulation technique enables high data throughput by splitting channels across orthogonal subcarriers?',
+    prompt: 'Which of the following is a real-life application of a Demultiplexer (DEMUX)?',
     options: [
-      { id: 'a', text: 'OFDM (Orthogonal Frequency Division Multiplexing)' },
-      { id: 'b', text: 'Analog CW Morse Keying' },
-      { id: 'c', text: 'Single Sideband (SSB)' },
-      { id: 'd', text: 'Frequency Shift Keying (FSK) only' }
+      { id: 'a', text: 'Distributing a single data signal to multiple output devices' },
+      { id: 'b', text: 'Encoding multiple lines into a single binary code' },
+      { id: 'c', text: 'Dividing clock frequency by a factor of 2' },
+      { id: 'd', text: 'Storing one bit of data between clock pulses' }
     ],
     correct: 'a',
-    explanation: 'OFDM is a digital multicarrier modulation scheme that achieves high spectral efficiency and mitigates multipath fading in cellular and Wi-Fi networks.'
+    explanation: 'DEMUX is used in communication receivers to separate a multiplexed signal back into individual channels, and in memory address decoding to enable one memory chip out of many.'
   },
   {
     id: 'q14',
-    prompt: 'Anti-lock Braking Systems (ABS) in vehicles utilize digital hall-effect wheel speed sensors to:',
+    prompt: 'What is a flip-flop in digital electronics?',
     options: [
-      { id: 'a', text: 'Detect imminent wheel lockup and rapidly pulse brake pressure via digital solenoid valves' },
-      { id: 'b', text: 'Increase engine RPM during sudden stops' },
-      { id: 'c', text: 'Turn off the headlights when stopping' },
-      { id: 'd', text: 'Dispense wiper fluid when tires slip' }
+      { id: 'a', text: 'A basic memory element that stores one bit of data' },
+      { id: 'b', text: 'A circuit that selects between two input signals' },
+      { id: 'c', text: 'A gate that inverts its input on every clock pulse' },
+      { id: 'd', text: 'A component used to amplify digital logic levels' }
     ],
     correct: 'a',
-    explanation: 'ABS microcontrollers read digital pulses from wheel rotation sensors up to 100 times per second, commanding digital hydraulic valves to modulate braking and prevent skidding.'
+    explanation: 'A flip-flop is a bistable sequential circuit that stores 1 bit (either 0 or 1). It retains its state until changed by a clock pulse or control input. It is the fundamental building block of registers and memory.'
   },
   {
     id: 'q15',
-    prompt: 'Which digital circuit component is used to count clock cycles, divide frequencies, and generate precise time intervals in digital clocks and microcontrollers?',
+    prompt: 'What is the main difference between a latch and a flip-flop?',
     options: [
-      { id: 'a', text: 'Binary Flip-Flop Counters (e.g., T or D flip-flops in cascade)' },
-      { id: 'b', text: 'Varactor tuning diodes' },
-      { id: 'c', text: 'Piezo buzzer discs' },
-      { id: 'd', text: 'BJT power amplifiers' }
+      { id: 'a', text: 'A latch is level-triggered; a flip-flop is edge-triggered (clock-controlled)' },
+      { id: 'b', text: 'A latch stores multiple bits; a flip-flop stores only one bit' },
+      { id: 'c', text: 'A latch is used in counters; a flip-flop is used in logic gates' },
+      { id: 'd', text: 'A latch uses CMOS; a flip-flop uses TTL technology' }
     ],
     correct: 'a',
-    explanation: 'Flip-flops arranged in synchronous or asynchronous cascades act as binary frequency dividers and counters, converting crystal oscillator pulses into seconds and minutes.'
+    explanation: 'A latch is transparent when the enable signal is HIGH (level-sensitive), so output changes with input. A flip-flop changes state only on the rising or falling edge of a clock pulse (edge-triggered), making it more predictable in synchronous circuits.'
   },
   {
     id: 'q16',
-    prompt: 'In Internet of Things (IoT) edge devices, what is the role of a low-power microcontroller (e.g., ARM Cortex-M or ESP32)?',
+    prompt: 'What does the T (Toggle) flip-flop do when T = 1?',
     options: [
-      { id: 'a', text: 'Gathers environmental sensor data, processes digital telemetry, and transmits via wireless protocols (BLE, Wi-Fi, LoRa)' },
-      { id: 'b', text: 'Generates thousands of watts of heat' },
-      { id: 'c', text: 'Acts solely as an electrical ground rod' },
-      { id: 'd', text: 'Converts optical light into nuclear radiation' }
+      { id: 'a', text: 'It toggles (changes) its output state on every clock pulse' },
+      { id: 'b', text: 'It holds its current output state unchanged' },
+      { id: 'c', text: 'It resets its output to 0 unconditionally' },
+      { id: 'd', text: 'It sets its output to 1 unconditionally' }
     ],
     correct: 'a',
-    explanation: 'Microcontrollers run embedded firmware to read digital sensors, execute edge computing logic, and communicate over wireless networks efficiently in sleep-wake cycles.'
+    explanation: 'When T = 1, the T flip-flop toggles its output (Q becomes Q\' and Q\' becomes Q) on every active clock edge. When T = 0, it holds its current state — making it ideal for frequency division.'
   },
   {
     id: 'q17',
-    prompt: 'Why are digital cryptographic accelerators (hardware AES, RSA engines) embedded in modern microprocessors and secure elements?',
+    prompt: 'What is the T flip-flop mainly used for?',
     options: [
-      { id: 'a', text: 'To perform cryptographic operations orders of magnitude faster and resist side-channel timing attacks' },
-      { id: 'b', text: 'To compress raw audio into MP3 format' },
-      { id: 'c', text: 'To replace the system power supply' },
-      { id: 'd', text: 'To display graphical user interfaces' }
+      { id: 'a', text: 'Frequency division and building counters' },
+      { id: 'b', text: 'Data storage and register design' },
+      { id: 'c', text: 'Encoding binary to Gray code' },
+      { id: 'd', text: 'Implementing combinational logic circuits' }
     ],
     correct: 'a',
-    explanation: 'Dedicated digital hardware pipelines execute math-intensive encryption rounds (matrix Galois field operations) without stalling general CPU cores, securing bank cards and mobile devices.'
+    explanation: 'The T flip-flop toggles on each clock pulse when T=1, effectively dividing the clock frequency by 2 per stage. Cascading T flip-flops builds binary counters (ripple counters).'
   },
   {
     id: 'q18',
-    prompt: 'What digital component selects one input from several digital signal lines and routes it to a single output line based on control bits?',
+    prompt: 'What does the D (Data) flip-flop do?',
     options: [
-      { id: 'a', text: 'Multiplexer (MUX)' },
-      { id: 'b', text: 'Operational Amplifier' },
-      { id: 'c', text: 'Transformer' },
-      { id: 'd', text: 'Schottky Diode' }
+      { id: 'a', text: 'It stores the value present at the D input on the active clock edge' },
+      { id: 'b', text: 'It toggles its output on every clock pulse regardless of the input' },
+      { id: 'c', text: 'It sets output to 1 when D = 1 and resets to 0 when D = 0 immediately' },
+      { id: 'd', text: 'It outputs the complement of the J-K input combination' }
     ],
     correct: 'a',
-    explanation: 'A Multiplexer (data selector) connects 2^N data inputs to 1 output using N select lines, widely used in CPU bus routing and telecommunication switches.'
+    explanation: 'The D flip-flop (Delay flip-flop) captures the value on the D line at the clock\'s active edge and holds it until the next active edge. It has no invalid state, making it simple and reliable.'
   },
   {
     id: 'q19',
-    prompt: 'Smart Electrical Power Grids use Phasor Measurement Units (PMUs) and SCADA systems. What core digital technology guarantees synchronized measurements across the nation?',
+    prompt: 'What is the main use of a D flip-flop?',
     options: [
-      { id: 'a', text: 'GPS satellite atomic clock digital timestamps (IEEE C37.118)' },
-      { id: 'b', text: 'Manual telephone dial-in checks' },
-      { id: 'c', text: 'Mechanical pendulum clocks' },
-      { id: 'd', text: 'Mercury vapor relays' }
+      { id: 'a', text: 'Data storage and synchronization in registers' },
+      { id: 'b', text: 'Building frequency dividers and counters' },
+      { id: 'c', text: 'Selecting between multiple data inputs' },
+      { id: 'd', text: 'Performing arithmetic addition operations' }
     ],
     correct: 'a',
-    explanation: 'Digital PMUs sample AC voltage/current waveforms microsecond-synchronized to GPS atomic clocks to analyze real-time grid stability and prevent blackouts.'
+    explanation: 'D flip-flops are the core component of shift registers, data registers, and pipeline stages in processors. They synchronize data transfer between different parts of a digital system clocked at the same frequency.'
   },
   {
     id: 'q20',
-    prompt: 'What is the function of a Digital-to-Analog Converter (DAC) in a smartphone when playing high-res music through wired headphones?',
+    prompt: 'What is the JK flip-flop known for?',
     options: [
-      { id: 'a', text: 'Translates binary PCM/DSD audio bits into a smooth continuous electrical voltage wave for headphone drivers' },
-      { id: 'b', text: 'Reads the battery percentage voltage' },
-      { id: 'c', text: 'Increases screen refresh rate' },
-      { id: 'd', text: 'Recharges the lithium-ion battery' }
+      { id: 'a', text: 'It eliminates the "invalid state" problem found in the SR flip-flop' },
+      { id: 'b', text: 'It is the simplest flip-flop with only one input line' },
+      { id: 'c', text: 'It stores 2 bits of data in a single element' },
+      { id: 'd', text: 'It changes state only when reset to ground' }
     ],
     correct: 'a',
-    explanation: 'Audio stored digitally on flash memory consists of numbers (0s and 1s); the DAC reconstructs this into an analog audio waveform that moves the speaker diaphragm.'
+    explanation: 'The SR flip-flop has an undefined/invalid state when both S=1 and R=1. The JK flip-flop solves this by defining J=1, K=1 as a toggle operation, making it a universal flip-flop with no invalid state.'
   },
   {
     id: 'q21',
-    prompt: 'In digital industrial robotics, what is the role of an optical rotary encoder?',
+    prompt: 'What is a register in digital electronics?',
     options: [
-      { id: 'a', text: 'Translates rotational joint movement into digital pulses / Gray code for closed-loop position feedback' },
-      { id: 'b', text: 'Cools the robotic arm using optical fans' },
-      { id: 'c', text: 'Supplies high AC voltage to drive motors' },
-      { id: 'd', text: 'Paints the metal surfaces of the robot' }
+      { id: 'a', text: 'A group of flip-flops used to store multiple bits of data' },
+      { id: 'b', text: 'A single logic gate that holds one bit indefinitely' },
+      { id: 'c', text: 'A lookup table that maps inputs to outputs' },
+      { id: 'd', text: 'A circuit that counts the number of clock pulses' }
     ],
     correct: 'a',
-    explanation: 'Optical rotary encoders use patterned slotted discs and photodetectors to send digital position quadrature signals to motor controllers, achieving sub-millimeter positioning.'
+    explanation: 'A register is a collection of D flip-flops (typically 4, 8, 16, or 32) that store a multi-bit binary word. Registers are used inside CPUs to hold operands, results, and control data during processing.'
   },
   {
     id: 'q22',
-    prompt: 'Which digital logic family is dominant in modern VLSI microchips due to its extremely low static power dissipation?',
+    prompt: 'What is a counter used for in digital electronics?',
     options: [
-      { id: 'a', text: 'CMOS (Complementary Metal-Oxide-Semiconductor)' },
-      { id: 'b', text: 'TTL (Transistor-Transistor Logic)' },
-      { id: 'c', text: 'RTL (Resistor-Transistor Logic)' },
-      { id: 'd', text: 'ECL (Emitter-Coupled Logic)' }
+      { id: 'a', text: 'To count the number of clock pulses or events' },
+      { id: 'b', text: 'To select one of multiple input data lines' },
+      { id: 'c', text: 'To convert binary numbers to BCD format' },
+      { id: 'd', text: 'To store a fixed multi-bit data word in registers' }
     ],
     correct: 'a',
-    explanation: 'CMOS combines complementary PMOS and NMOS transistors such that steady-state paths to ground are closed, drawing virtually zero current when not switching.'
+    explanation: 'Counters are sequential circuits (made from flip-flops) that go through a predetermined sequence of binary states with each clock pulse. They are used for timers, frequency dividers, event counting, and address generation in memory.'
   },
   {
     id: 'q23',
-    prompt: 'In space exploration (e.g. Mars Rovers), why are digital electronics specifically radiation-hardened (Rad-Hard)?',
+    prompt: 'Which of the following is an everyday device that uses digital electronics?',
     options: [
-      { id: 'a', text: 'To prevent cosmic ion strikes from causing Single Event Upsets (bit flips) and latch-up destruction' },
-      { id: 'b', text: 'To improve radio music streaming clarity' },
-      { id: 'c', text: 'To make the silicon chips flexible' },
-      { id: 'd', text: 'To eliminate the need for software programming' }
+      { id: 'a', text: 'Digital clock, calculator, and mobile phone' },
+      { id: 'b', text: 'Analog thermometer, mercury barometer, and spring scale' },
+      { id: 'c', text: 'Mechanical wristwatch, vinyl record player, and film camera' },
+      { id: 'd', text: 'Glass vacuum tube radio, telegraph key, and rotary phone' }
     ],
     correct: 'a',
-    explanation: 'Heavy cosmic particles can deposit charge in silicon junctions causing Single Event Upsets (SEU). Rad-hard designs use silicon-on-insulator (SOI) and triple modular redundancy.'
+    explanation: 'Digital clocks use binary counters, calculators use ALUs and BCD circuits, and mobile phones use microprocessors, ADCs, DACs, and memory — all built from digital electronics components.'
   },
   {
     id: 'q24',
-    prompt: 'What role does an Arithmetic Logic Unit (ALU) play inside a Central Processing Unit (CPU)?',
+    prompt: 'What is the function of an encoder in digital electronics?',
     options: [
-      { id: 'a', text: 'Executes fundamental binary arithmetic (ADD, SUB) and logical operations (AND, OR, XOR, shifts)' },
-      { id: 'b', text: 'Acts as the external power transformer' },
-      { id: 'c', text: 'Stores files permanently after power loss' },
-      { id: 'd', text: 'Manages liquid nitrogen cooling cycles' }
+      { id: 'a', text: 'It converts multiple input lines into a coded binary output' },
+      { id: 'b', text: 'It converts coded binary input into multiple output lines' },
+      { id: 'c', text: 'It selects one of several inputs and routes it to a single output' },
+      { id: 'd', text: 'It stores binary data across a group of flip-flops' }
     ],
     correct: 'a',
-    explanation: 'The ALU is the digital compute engine inside the CPU, executing core binary calculations and comparisons commanded by program instructions.'
+    explanation: 'An encoder takes 2^N input lines (only one active at a time) and produces an N-bit binary code. For example, an octal-to-binary encoder takes 8 inputs and produces a 3-bit binary output. Used in keyboards and priority encoders.'
   },
   {
     id: 'q25',
-    prompt: 'In digital medical infusion pumps, why are dual redundant digital microcontrollers employed with watchdog timers?',
+    prompt: 'What is the function of a decoder in digital electronics?',
     options: [
-      { id: 'a', text: 'To cross-verify dosage calculations and instantly fail-safe if software hangs or diverges, preventing fatal medication errors' },
-      { id: 'b', text: 'To display video games for the patient' },
-      { id: 'c', text: 'To reduce the total manufacturing cost' },
-      { id: 'd', text: 'To double the Wi-Fi download speed' }
+      { id: 'a', text: 'It converts coded binary input into multiple output lines (opposite of an encoder)' },
+      { id: 'b', text: 'It converts multiple input lines into a single coded binary output' },
+      { id: 'c', text: 'It routes one input signal to one of several outputs using select lines' },
+      { id: 'd', text: 'It toggles its output on every clock pulse to divide frequency' }
     ],
     correct: 'a',
-    explanation: 'Life-critical digital medical systems require redundant lockstep execution and hardware watchdogs so any detected fault immediately triggers an alarm and locks valves.'
+    explanation: 'A decoder takes an N-bit binary input and activates exactly one of 2^N output lines corresponding to that binary value. For example, a 3-to-8 decoder activates one of 8 outputs. Used in memory address decoding and display drivers.'
   }
 ];
 
