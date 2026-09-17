@@ -285,7 +285,11 @@ async function handleLogin(e) {
   submitBtn.innerHTML = `<span>Sign In & Enter Quiz</span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>`;
 
   if (error) {
-    showError(authErrorMsg, error.message || 'Invalid email or password.');
+    let errMsg = error.message || 'Invalid email or password.';
+    if (errMsg.toLowerCase().includes('email not confirmed')) {
+      errMsg = 'Your email has not been confirmed yet. Please check your inbox for a confirmation link, or ask your admin to disable email confirmation in Supabase settings.';
+    }
+    showError(authErrorMsg, errMsg);
   } else {
     // Successfully signed in, start quiz
     startQuiz();
