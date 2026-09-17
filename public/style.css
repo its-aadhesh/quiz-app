@@ -1316,3 +1316,26 @@ body::before {
     font-size: 0.82rem;
   }
 }
+
+/* ================= QUZZO LANDING EXPERIENCE ================= */
+.subjects-section { margin: 4px auto 30px; max-width: 620px; }
+.section-kicker { color: var(--ink-primary); font-size: .82rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; margin-bottom: 12px; }
+.subject-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 9px; }
+.subject-card { min-height: 108px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; padding: 12px 6px; background: var(--bg-page); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); color: var(--ink-primary); font: 700 .86rem var(--font-sans); cursor: pointer; transition: transform .2s ease, border-color .2s ease, box-shadow .2s ease, background .2s ease; }
+.subject-card:hover { transform: translateY(-3px); border-color: var(--accent-amber); box-shadow: var(--shadow-sm); }
+.subject-card.selected { background: var(--accent-warm-tint); border-color: var(--accent-amber); box-shadow: 0 0 0 2px rgba(217,119,6,.12); }
+.subject-icon { color: var(--accent-terracotta); font: 700 1.45rem Georgia, serif; line-height: 1; }
+.subject-card small { color: var(--ink-tertiary); font-size: .62rem; font-weight: 600; line-height: 1.2; }
+.subject-card.selected small { color: var(--accent-terracotta); }
+.subject-note { color: var(--ink-secondary); font-size: .78rem; margin-top: 10px; }
+.login-role-note { display: flex; flex-direction: column; gap: 3px; padding: 11px 13px; background: var(--accent-warm-tint); border: 1px solid var(--accent-amber-light); border-radius: var(--radius-sm); color: var(--accent-terracotta); font-size: .78rem; }
+.login-role-note span { color: var(--ink-secondary); }
+.profile-click-target { cursor: pointer; }
+.profile-click-target:focus-visible, .student-meta:focus-visible { outline: 3px solid var(--accent-amber-light); outline-offset: 2px; }
+.auth-tabs { grid-template-columns: repeat(3, 1fr); }
+@media (max-width: 600px) {
+  .subject-grid { grid-template-columns: repeat(3, 1fr); }
+  .subject-card { min-height: 92px; }
+  .subject-card:nth-child(4), .subject-card:nth-child(5) { grid-column: span 1; }
+  .auth-tabs { grid-template-columns: 1fr; }
+}

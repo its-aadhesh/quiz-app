@@ -88,6 +88,12 @@ const editProfileYear = document.getElementById('editProfileYear');
 const editProfileEmail = document.getElementById('editProfileEmail');
 const profileSaveMsg = document.getElementById('profileSaveMsg');
 const headerDashboardBtn = document.getElementById('headerDashboardBtn');
+const profileAvatarTrigger = document.getElementById('studentAvatarInitial');
+const tabTeacherBtn = document.getElementById('tabTeacherBtn');
+const teacherForm = document.getElementById('teacherForm');
+const teacherMsg = document.getElementById('teacherMsg');
+const subjectNote = document.getElementById('subjectNote');
+let selectedSubject = 'DPCO';
 const headerProfileTrigger = document.getElementById('headerProfileTrigger');
 const openDashboardFromHeroBtn = document.getElementById('openDashboardFromHeroBtn');
 
@@ -402,6 +408,10 @@ function showError(el, message) {
 
 // 5. Quiz Navigation & Engine
 function startQuiz() {
+  if (selectedSubject !== 'DPCO') {
+    alert(`${selectedSubject} quizzes are coming soon. Please choose DPCO for now.`);
+    return;
+  }
   if (questions.length === 0) {
     alert('Quiz questions are loading, please try again in a second.');
     return;
@@ -804,8 +814,22 @@ function escapeHtml(str) {
   })[m]);
 }
 
+// Subject selection keeps the current DPCO quiz playable while future subjects are prepared.
+function setupSubjectSelection() {
+  document.querySelectorAll('.subject-card').forEach(card => {
+    card.addEventListener('click', () => {
+      selectedSubject = card.dataset.subject;
+      document.querySelectorAll('.subject-card').forEach(item => item.classList.remove('selected'));
+      card.classList.add('selected');
+      const ready = selectedSubject === 'DPCO';
+      subjectNote.textContent = ready ? 'DPCO is ready to play — 25 questions available.' : `${selectedSubject} quizzes are coming soon. Choose DPCO to start practicing.`;
+    });
+  });
+}
+
 // 8. Event Listeners
 function setupEventListeners() {
+  setupSubjectSelection();
   homeLogoBtn.addEventListener('click', showFrontPage);
 
   soundToggleBtn.addEventListener('click', () => {
@@ -824,17 +848,36 @@ function setupEventListeners() {
   tabLoginBtn.addEventListener('click', () => {
     tabLoginBtn.classList.add('active');
     tabRegisterBtn.classList.remove('active');
+    tabTeacherBtn.classList.remove('active');
     loginForm.classList.remove('hidden');
     registerForm.classList.add('hidden');
+    teacherForm.classList.add('hidden');
     authErrorMsg.classList.add('hidden');
   });
 
   tabRegisterBtn.addEventListener('click', () => {
     tabRegisterBtn.classList.add('active');
     tabLoginBtn.classList.remove('active');
+    tabTeacherBtn.classList.remove('active');
     registerForm.classList.remove('hidden');
     loginForm.classList.add('hidden');
+    teacherForm.classList.add('hidden');
     regErrorMsg.classList.add('hidden');
+  });
+
+  tabTeacherBtn.addEventListener('click', () => {
+    tabTeacherBtn.classList.add('active');
+    tabLoginBtn.classList.remove('active');
+    tabRegisterBtn.classList.remove('active');
+    teacherForm.classList.remove('hidden');
+    loginForm.classList.add('hidden');
+    registerForm.classList.add('hidden');
+  });
+
+  teacherForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    teacherMsg.textContent = 'Teacher sign-in is reserved for the upcoming question editor. Student quiz access is available now.';
+    teacherMsg.classList.remove('hidden');
   });
 
   headerSignInBtn.addEventListener('click', () => {
@@ -933,6 +976,10 @@ function setupEventListeners() {
 
   if (headerDashboardBtn) headerDashboardBtn.addEventListener('click', openDashboard);
   if (headerProfileTrigger) headerProfileTrigger.addEventListener('click', openDashboard);
+  if (profileAvatarTrigger) {
+    profileAvatarTrigger.addEventListener('click', openDashboard);
+    profileAvatarTrigger.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') openDashboard(); });
+  }
   if (openDashboardFromHeroBtn) openDashboardFromHeroBtn.addEventListener('click', openDashboard);
   if (closeDashboardBtn) closeDashboardBtn.addEventListener('click', closeDashboard);
   if (closeDashboardSecondaryBtn) closeDashboardSecondaryBtn.addEventListener('click', closeDashboard);

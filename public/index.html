@@ -4,8 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <meta name="theme-color" content="#FAF8F5">
-  <meta name="description" content="Applications of Digital Electronics Academic Quiz & Real-Time Student Leaderboard.">
-  <title>Applications of Digital Electronics — Student Quiz</title>
+  <meta name="description" content="Quzzo — focused practice quizzes for students.">
+  <title>Quzzo — Student Quiz Platform</title>
 
   <!-- Google Fonts: Editorial & Humanist typography -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -32,8 +32,8 @@
           </svg>
         </div>
         <div>
-          <div class="site-title">Digital Electronics</div>
-          <div class="site-subtitle">Academic Evaluation Portal</div>
+          <div class="site-title">Quzzo</div>
+          <div class="site-subtitle">Learn. Practice. Level up.</div>
         </div>
       </div>
 
@@ -58,12 +58,12 @@
 
         <!-- Student Account Badge (When Authenticated) -->
         <div id="studentProfileBadge" class="student-pill hidden">
-          <div class="student-avatar" id="studentAvatarInitial">S</div>
+          <div class="student-avatar profile-click-target" id="studentAvatarInitial" role="button" tabindex="0" title="Edit your profile" aria-label="Edit your profile">S</div>
           <div class="student-meta" id="headerProfileTrigger" role="button" tabindex="0" title="Click to open User Dashboard" style="cursor: pointer;">
             <span class="student-name" id="headerStudentName">Student</span>
             <span class="student-dept-tag" id="headerStudentDept">ECE</span>
           </div>
-          <button id="headerDashboardBtn" class="header-icon-btn-sm" title="Edit Profile & Dashboard" aria-label="Open dashboard">⚙️</button>
+          <!-- The avatar and profile name open the profile editor; no extra gear control needed. -->
           <button id="logoutBtn" class="text-logout-btn" title="Sign out">Log out</button>
         </div>
 
@@ -84,24 +84,26 @@
       <div class="hero-card">
         <div class="hero-chip">
           <span class="pulse-dot"></span>
-          25 Industry & Theory Application Questions
+          Your next smart study session starts here
         </div>
 
         <h1 class="hero-heading">
-          Applications of <span class="highlight-text">Digital Electronics</span>
+          Welcome to <span class="highlight-text">Quzzo</span>
         </h1>
         <p class="hero-desc">
-          Test your comprehension of real-world electronic systems: automotive ECUs, avionics buses, biomedical DSP, industrial PLCs, and modern VLSI architectures.
+          Pick a subject, challenge yourself, and build confidence one question at a time. Quzzo keeps practice simple, focused, and rewarding.
         </p>
 
-        <!-- Interactive Department Badges -->
-        <div class="topics-ribbon">
-          <span class="topic-tag">Automotive ECUs</span>
-          <span class="topic-tag">Industrial PLCs</span>
-          <span class="topic-tag">Medical DSP</span>
-          <span class="topic-tag">Avionics Buses</span>
-          <span class="topic-tag">5G & IoT</span>
-          <span class="topic-tag">FPGA & CMOS</span>
+        <div class="subjects-section">
+          <div class="section-kicker">Choose a subject</div>
+          <div class="subject-grid" role="list" aria-label="Quiz subjects">
+            <button class="subject-card" data-subject="Maths" type="button"><span class="subject-icon">∑</span><span>Maths</span><small>Coming soon</small></button>
+            <button class="subject-card" data-subject="OOPS" type="button"><span class="subject-icon">{ }</span><span>OOPS</span><small>Coming soon</small></button>
+            <button class="subject-card" data-subject="DSA" type="button"><span class="subject-icon">⌘</span><span>DSA</span><small>Coming soon</small></button>
+            <button class="subject-card selected" data-subject="DPCO" type="button"><span class="subject-icon">◈</span><span>DPCO</span><small>25 questions ready</small></button>
+            <button class="subject-card" data-subject="DSE" type="button"><span class="subject-icon">▦</span><span>DSE</span><small>Coming soon</small></button>
+          </div>
+          <p class="subject-note" id="subjectNote">DPCO is ready to play — 25 questions available.</p>
         </div>
 
         <!-- Central Action Card / Auth Options -->
@@ -109,8 +111,9 @@
           <!-- State A: Not logged in -->
           <div id="guestEntryBox" class="entry-state-box">
             <div class="auth-tabs">
-              <button class="auth-tab-btn active" id="tabLoginBtn">Sign In</button>
-              <button class="auth-tab-btn" id="tabRegisterBtn">Create Student Account</button>
+              <button class="auth-tab-btn active" id="tabLoginBtn">Student Login</button>
+              <button class="auth-tab-btn" id="tabRegisterBtn">Create Account</button>
+              <button class="auth-tab-btn" id="tabTeacherBtn">Teacher Login</button>
             </div>
 
             <!-- Login Form -->
@@ -148,6 +151,21 @@
                   Take quiz as Guest (Callsign entry at end)
                 </button>
               </div>
+            </form>
+
+            <!-- Teacher Form (question editing tools will be added in a future release) -->
+            <form id="teacherForm" class="auth-form-body hidden">
+              <div class="login-role-note"><strong>Teacher workspace</strong><span>Question and answer-key editing is coming soon.</span></div>
+              <div class="form-group">
+                <label for="teacherEmail">Teacher Email</label>
+                <input type="email" id="teacherEmail" placeholder="teacher@college.edu" required class="input-field" />
+              </div>
+              <div class="form-group">
+                <label for="teacherPassword">Password</label>
+                <input type="password" id="teacherPassword" placeholder="••••••••" required class="input-field" />
+              </div>
+              <div id="teacherMsg" class="form-alert hidden"></div>
+              <button type="submit" class="btn btn-main full-width">Sign in as Teacher</button>
             </form>
 
             <!-- Register Form -->
@@ -348,7 +366,7 @@
     <div class="modal-card modal-card-sm">
       <div class="modal-header">
         <div class="modal-title-group">
-          <div class="trophy-badge">⚙️</div>
+          <div class="trophy-badge">🔐</div>
           <div>
             <h3 class="modal-heading">Enable Google Authentication</h3>
             <p class="modal-sub">1-Minute Setup in your Supabase Dashboard</p>
@@ -381,6 +399,8 @@
         </div>
       </div>
     </div>
+  </div>
+
   <!-- ================= USER DASHBOARD MODAL ================= -->
   <div id="userDashboardModal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="dashboardModalTitle">
     <div class="modal-card modal-card-sm">
