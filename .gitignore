@@ -18,3 +18,6 @@ Thumbs.db
 .idea/
 *.swp
 *.swo
+
+# Local leaderboard store (created at runtime)
+data/

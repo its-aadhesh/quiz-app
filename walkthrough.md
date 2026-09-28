@@ -1,4 +1,51 @@
-# Circuit Check: Applications of Digital Electronics Quiz
+# Changelog / Walkthrough
+
+## Latest — CS Basics quiz (1st year) + Guest Mode + local leaderboard
+
+### 1. New 10-question quiz: "CS Basics — Programs & Algorithms"
+Added `quizzes/cs-basics.js` covering the first-year portion:
+Programs and Algorithms · Problem Definition · Flow Chart · Fundamental Algorithms
+(exchange of two variables, counting, summation, factorial, sine function
+computation, Fibonacci sequence, reversing the digits of an integer, base
+conversion) · algorithm development, description, design considerations and
+applications.
+
+- Deliberately **mixed answer key** — `b, c, d, a, c, a, d, b, d, a` (A×3, B×2, C×2, D×3).
+- Every question carries a `topic` badge and a teaching explanation shown in the review.
+- 10 minute countdown; 1 mark per question.
+
+### 2. Multi-subject architecture
+- `quizzes/index.js` is now the single registry of subjects (metadata + banks).
+  `server.js` shrank to routes only.
+- New `GET /api/quizzes`; `GET /api/questions` and `POST /api/submit` take a
+  `subject`. The landing-page subject cards, timer, question counter and
+  leaderboard tabs are generated from the registry.
+
+### 3. Guest Mode — name first, then the quiz
+- The entry card opens on a **Guest Mode** tab: enter a name (department/year
+  optional) and go straight into the quiz. No email, no password, no post-quiz prompt.
+- The name is remembered in `localStorage` and shown in the quiz HUD as
+  `Name · Guest · CSE`.
+- Marks are published automatically on submission; the results screen reports
+  the exact rank: *"🏆 Saved as Aadhesh — rank #3 of 12 with 7/10 marks."*
+
+### 4. Leaderboard that always works
+- New `leaderboard-store.js` writes to `data/leaderboard.json` (git-ignored), so
+  marks appear with zero database setup; Supabase remains an optional mirror for
+  signed-in students.
+- Ranked by score ↓, then fastest time, then who finished first; one row per
+  student (a retake only replaces a weaker result).
+- Per-subject tabs (CS Basics / DPCO / All subjects), medals for the top three,
+  `guest` and `you` tags, time column, auto-refresh while open.
+
+### 5. Tests
+`npm test` runs 13 dependency-free checks: bank integrity, no leaked answer keys,
+mixed-answer enforcement, grading maths, ranking, retake handling and input
+sanitisation.
+
+---
+
+## Earlier — Circuit Check: Applications of Digital Electronics Quiz
 
 We have completely upgraded the quiz platform with a cloud backend, Google authentication, 25 specialized questions, an instantaneous live leaderboard, and a mobile-optimized cyber aesthetic.
 

@@ -1,12 +1,19 @@
 {
   "name": "quiz-app",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Quzzo \u2014 multi-subject student quiz platform with guest mode and a live leaderboard",
+  "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node server.js",
+    "dev": "node server.js",
+    "test": "node tests/quiz.test.js"
   },
-  "keywords": [],
+  "keywords": [
+    "quiz",
+    "express",
+    "leaderboard",
+    "education"
+  ],
   "author": "",
   "license": "ISC",
   "dependencies": {
