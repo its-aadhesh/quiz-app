@@ -8,12 +8,19 @@
 
 ```
 quiz-app/
-├── server.js              ← Node.js backend (Express server)
+├── server.js              ← Node.js backend (Express routes only)
+├── quizzes/
+│   ├── index.js           ← Quiz registry: metadata, grading, public shapes
+│   ├── cs-basics.js       ← 10 questions — Programs & Algorithms (1st year)
+│   └── dpco.js            ← 25 questions — Applications of Digital Electronics
+├── leaderboard-store.js   ← JSON-file leaderboard (ranking, best-per-student)
+├── tests/quiz.test.js     ← `npm test` — banks, grading & leaderboard checks
+├── data/leaderboard.json  ← Created at runtime, git-ignored
 ├── package.json           ← Project metadata & dependencies
 ├── public/
 │   ├── index.html         ← All the HTML markup (views + modals)
 │   ├── style.css          ← All styling (design system + components)
-│   └── script.js          ← All frontend logic (auth, quiz, leaderboard)
+│   └── script.js          ← All frontend logic (guest mode, quiz, leaderboard)
 ```
 
 There are **no frameworks** — this is pure vanilla HTML + CSS + JavaScript with a Node/Express backend.
@@ -22,57 +29,101 @@ There are **no frameworks** — this is pure vanilla HTML + CSS + JavaScript wit
 
 ## 1. `server.js` — The Backend
 
-**What it does:** Acts as a simple web server. It has three jobs:
+**What it does:** a thin Express layer. All the thinking lives in two modules
+next to it (`quizzes/` and `leaderboard-store.js`).
+
 1. **Serve the frontend files** (HTML, CSS, JS) from the `public/` folder
-2. **Expose Supabase credentials** via a config API
-3. **Store questions and grade answers** server-side (so users can't cheat by inspecting the page)
+2. **Expose Supabase credentials** via a config API (optional cloud accounts)
+3. **Serve questions & grade answers** server-side (students can't read the key)
+4. **Store and rank leaderboard marks** so every finished quiz shows up instantly
 
-### Key Sections
+### The API
 
-#### Server Setup (lines 1–8)
+| Route | Purpose |
+|---|---|
+| `GET /api/config` | Supabase URL + anon key for the browser client |
+| `GET /api/quizzes` | Catalogue: every subject, question count, time limit, `available` flag |
+| `GET /api/questions?subject=csbasics` | Questions for one subject **without** the answer key |
+| `POST /api/submit` | `{ subject, answers }` → `{ score, total, percentage, results[] }` |
+| `GET /api/leaderboard?subject=csbasics&limit=50` | Ranked board (best row per student) |
+| `POST /api/leaderboard` | Saves one finished attempt, replies with `{ entry, rank, players, isBest }` |
+
 ```js
-const express = require('express');
-app.use(express.json());
-app.use(express.static(path.join(__dirname, 'public')));
+// Server setup
+app.use(express.json());                                  // read JSON bodies
+app.use(express.static(path.join(__dirname, 'public')));  // serve the frontend
 ```
-- `express.json()` lets the server read JSON data sent from the browser.
-- `express.static('public')` automatically serves `index.html`, `style.css`, and `script.js` when you visit `http://localhost:3000`.
 
-#### `GET /api/config` (lines 11–18)
+**To change your Supabase project:** edit `SUPABASE_CONFIG` near the top of `server.js`.
+
+---
+
+## 1b. `quizzes/` — Question banks & grading
+
+`quizzes/index.js` is the single source of truth for subjects. The landing-page
+subject cards, the timer, the question counter and the leaderboard tabs are all
+built from this metadata — nothing is hard-coded in the HTML.
+
 ```js
-const SUPABASE_CONFIG = { url: '...', anonKey: '...' };
-app.get('/api/config', (req, res) => { res.json(SUPABASE_CONFIG); });
+const QUIZZES = {
+  csbasics: {
+    id: 'csbasics',
+    name: 'CS Basics',
+    fullName: 'Computer Science Basics — Programs & Algorithms',
+    year: '1st Year',
+    timeLimitMinutes: 10,
+    questions: require('./cs-basics')   // 10 questions
+  },
+  dpco: { /* … 25 questions, 25 min … */ }
+};
 ```
-- **Why?** The Supabase URL and anonymous key are stored server-side, then fetched by the browser at startup. This keeps them out of the raw HTML source.
-- **To change your Supabase project:** Edit the `url` and `anonKey` values on lines 12–13.
 
-#### `GET /api/questions` (lines 325–328)
-```js
-const publicQuestions = QUESTIONS.map(({ id, prompt, options }) => ...);
-```
-- Sends questions **without** the `correct` answer field. This means a student can't open browser DevTools and see the answers.
-
-#### `POST /api/submit` (lines 331–352)
-- Receives the student's answers as `{ "answers": { "q1": "a", "q2": "c", ... } }`
-- Compares each answer against the stored `correct` field server-side
-- Returns: `{ score, total, percentage, results[] }` with explanations
-
-#### The 25 Questions (lines 21–322)
 Each question object looks like:
 ```js
 {
-  id: 'q1',
-  prompt: 'Which component is considered...',
+  id: 'q3',
+  topic: 'Flow Chart',                        // shown as the badge above the question
+  prompt: 'In a flowchart, which symbol represents a DECISION?',
   options: [
-    { id: 'a', text: 'Logic gates (AND, OR, NOT, NAND)' },
-    { id: 'b', text: 'Capacitor discharge banks' },
-    ...
+    { id: 'a', text: 'Rectangle' },
+    { id: 'b', text: 'Parallelogram' },
+    { id: 'c', text: 'Oval (ellipse)' },
+    { id: 'd', text: 'Diamond (rhombus)' }
   ],
-  correct: 'a',               // ← ONLY on the server, never sent to browser
-  explanation: 'Logic gates implement Boolean algebra...'
+  correct: 'd',            // ← ONLY on the server, never sent to the browser
+  explanation: 'Oval = Start/Stop, Parallelogram = Input/Output …'
 }
 ```
-**To add/change a question:** Edit the `QUESTIONS` array in `server.js` (lines 21–322). Restart the server after saving.
+
+Helper functions exported by `quizzes/index.js`:
+
+| Function | What it does |
+|---|---|
+| `listQuizzes()` | Catalogue for the landing page (ready subjects + "coming soon" ones) |
+| `publicQuestions(id)` | Strips `correct` + `explanation` before sending to the browser |
+| `grade(id, answers)` | Scores a paper and returns per-question feedback |
+| `resolveQuizId(raw)` | Normalises `"DPCO"`, `" dpco "`, junk → a known subject id |
+
+**To add a question:** edit `quizzes/cs-basics.js` (or `dpco.js`) and restart the
+server. Keep the answer key mixed across a/b/c/d — `npm test` fails if one letter
+is used more than 4 times or repeats three times in a row.
+
+**To add a whole subject:** drop `quizzes/my-subject.js` next to the others and
+register it in `QUIZZES`. The UI picks it up automatically.
+
+---
+
+## 1c. `leaderboard-store.js` — Where marks live
+
+A tiny JSON-file database (`data/leaderboard.json`, git-ignored, created on the
+first submission). No cloud project or table setup is needed, so guest marks
+always appear on the board.
+
+| Function | What it does |
+|---|---|
+| `addEntry(attempt)` | Sanitises the name (40 chars max), clamps the score, appends the row, writes the file atomically |
+| `getBoard({ subject, limit, mode })` | Ranks by **score ↓, then time ↑, then who finished first**; `mode: 'best'` (default) keeps one row per student so retakes don't flood the table |
+| `rankOf(entryId, subject)` | Where a just-saved attempt landed → `{ rank, players, isBest, best }` |
 
 ---
 
@@ -83,9 +134,16 @@ The HTML is divided into **3 main views** and **4 modals**. They are all loaded 
 ### The 3 Views
 
 #### View 1: Front / Landing Page (`#frontPageView`)
-The home screen. It has two sub-states:
-- **`#guestEntryBox`** — shown when no one is logged in (has the Sign In / Register tabs)
-- **`#authenticatedEntryBox`** — shown when a student is logged in (has their name and "Enter Quiz" button)
+The home screen. `#subjectGrid` is filled by JavaScript from `/api/quizzes`, and the
+entry card has two sub-states:
+- **`#guestEntryBox`** — shown when no one is logged in. Four tabs:
+  | Tab | Form | What it does |
+  |---|---|---|
+  | **Guest Mode** (default) | `#guestStartForm` | Name → straight into the quiz. No account, no email. |
+  | Student Login | `#loginForm` | Supabase email + password |
+  | Create Account | `#registerForm` | Supabase sign-up |
+  | Teacher | `#teacherForm` | Placeholder for the upcoming question editor |
+- **`#authenticatedEntryBox`** — shown when a student is logged in (their name and "Enter Quiz" button)
 
 #### View 2: Active Quiz (`#quizView`)
 Shows one question at a time. The question card (`#questionStage`) is **dynamically injected** by JavaScript — it is empty in the HTML.
@@ -97,10 +155,10 @@ Also dynamically filled by JavaScript after submission. Contains score, accuracy
 
 | Modal ID | Purpose |
 |---|---|
-| `#leaderboardModal` | Shows the ranked student leaderboard table |
+| `#leaderboardModal` | Ranked marks table + `#lbSubjectTabs` (CS Basics / DPCO / All subjects) |
 | `#googleSetupModal` | Guide shown when Google OAuth isn't configured |
 | `#userDashboardModal` | Edit profile form (name, department, year) |
-| `#guestCallsignModal` | Name entry for guests after they finish the quiz |
+| `#guestCallsignModal` | Safety net only — name entry if a quiz somehow ends without a player name |
 
 ---
 
@@ -437,19 +495,25 @@ handleRegister() → supabase.auth.signUp() [creates auth user]
 startQuiz() immediately (no email confirmation needed by default)
 ```
 
-### Guest Flow:
+### Guest Flow (name first — no account, no email):
 ```
-User clicks "Take quiz as Guest"
+Landing page opens on the "Guest Mode" tab
       ↓
-startQuiz() (no auth at all, currentUser = null)
+Student types their name (department & year optional) → "Start Quiz as Guest"
       ↓
-Quiz runs normally...
+handleGuestStart() validates the name, saves it to localStorage
+   (so the box is pre-filled next time) → guestProfile = { name, department, year }
       ↓
-On submit: pendingSubmissionData stored → #guestCallsignModal shown
+startQuiz() — the HUD shows "Name · Guest · CSE", the countdown uses the
+              subject's own time limit (10 min for CS Basics)
       ↓
-Guest enters name + dept → recordScoreToDatabase() with null student_id
+Last question → POST /api/submit { subject, answers } → marks calculated server-side
       ↓
-openLeaderboard()
+publishScore() → POST /api/leaderboard { name, score, total, timeTaken, mode: 'guest' }
+      ↓
+Results screen shows: "🏆 Saved as <name> — rank #3 of 12 with 7/10 marks"
+      ↓
+"View Leaderboard" → the student's own row is highlighted with a "you" tag
 ```
 
 ---
@@ -630,25 +694,26 @@ const SUPABASE_CONFIG = {
 ## 9. Data Flow Diagram
 
 ```
-Browser loads → GET /          → server sends index.html + style.css + script.js
-initApp() runs → GET /api/config  → server sends Supabase URL + key
-               → GET /api/questions → server sends 25 questions (no answers)
-               → Supabase auth check → user state determined
+Browser loads  → GET /                       → index.html + style.css + script.js
+initApp()      → GET /api/quizzes            → subject cards + leaderboard tabs
+               → GET /api/questions?subject= → questions for the selected subject (no answers)
+               → GET /api/config + Supabase  → optional: student accounts
 
-[Student clicks "Enter Quiz"]
-   → startQuiz() → renderQuestion() → student clicks options → studentAnswers{}
+[Guest types a name / student signs in, clicks Start]
+   → startQuiz() → renderQuestion() → option clicks fill studentAnswers{}
 
-[Student clicks "Submit"]
-   → POST /api/submit { answers }
-   → server grades answers → returns { score, results, explanation }
+[Last question]
+   → POST /api/submit { subject, answers }
+   → server grades against the key → { score, total, percentage, results[] }
    → renderResultsView()
 
-[If signed in]
-   → supabase.from('quiz_scores').insert() → score saved to cloud
+[Immediately after grading]
+   → POST /api/leaderboard { subject, name, department, score, total, timeTaken, mode }
+   → leaderboard-store writes data/leaderboard.json → replies { rank, players, isBest }
+   → results screen shows the rank banner
+   → (signed-in students only) supabase.from('quiz_scores').insert() as a cloud mirror
 
 [Leaderboard opens]
-   → supabase.from('student_leaderboard').select() → renders table
-
-[Another student submits]
-   → Supabase Realtime fires → loadLeaderboard() auto-called → table refreshes
+   → GET /api/leaderboard?subject=… → ranked table, own row highlighted
+   → refreshes every 15 s while open, plus instantly on a Supabase realtime INSERT
 ```

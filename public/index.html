@@ -96,14 +96,10 @@
 
         <div class="subjects-section">
           <div class="section-kicker">Choose a subject</div>
-          <div class="subject-grid" role="list" aria-label="Quiz subjects">
-            <button class="subject-card" data-subject="Maths" type="button"><span class="subject-icon">∑</span><span>Maths</span><small>Coming soon</small></button>
-            <button class="subject-card" data-subject="OOPS" type="button"><span class="subject-icon">{ }</span><span>OOPS</span><small>Coming soon</small></button>
-            <button class="subject-card" data-subject="DSA" type="button"><span class="subject-icon">⌘</span><span>DSA</span><small>Coming soon</small></button>
-            <button class="subject-card selected" data-subject="DPCO" type="button"><span class="subject-icon">◈</span><span>DPCO</span><small>25 questions ready</small></button>
-            <button class="subject-card" data-subject="DSE" type="button"><span class="subject-icon">▦</span><span>DSE</span><small>Coming soon</small></button>
+          <div class="subject-grid" id="subjectGrid" role="list" aria-label="Quiz subjects">
+            <!-- Subject cards are built by script.js from /api/quizzes -->
           </div>
-          <p class="subject-note" id="subjectNote">DPCO is ready to play — 25 questions available.</p>
+          <p class="subject-note" id="subjectNote">Loading subjects…</p>
         </div>
 
         <!-- Central Action Card / Auth Options -->
@@ -111,13 +107,61 @@
           <!-- State A: Not logged in -->
           <div id="guestEntryBox" class="entry-state-box">
             <div class="auth-tabs">
-              <button class="auth-tab-btn active" id="tabLoginBtn">Student Login</button>
+              <button class="auth-tab-btn active" id="tabGuestBtn">Guest Mode</button>
+              <button class="auth-tab-btn" id="tabLoginBtn">Student Login</button>
               <button class="auth-tab-btn" id="tabRegisterBtn">Create Account</button>
-              <button class="auth-tab-btn" id="tabTeacherBtn">Teacher Login</button>
+              <button class="auth-tab-btn" id="tabTeacherBtn">Teacher</button>
             </div>
 
+            <!-- ===== GUEST MODE: name first, then straight into the quiz ===== -->
+            <form id="guestStartForm" class="auth-form-body">
+              <div class="guest-mode-note">
+                <strong>⚡ No account needed</strong>
+                <span>Enter your name, take the quiz, and your marks appear on the leaderboard the moment you finish.</span>
+              </div>
+
+              <div class="form-group">
+                <label for="guestNameInput">Your Name</label>
+                <input type="text" id="guestNameInput" placeholder="e.g. Aadhesh S" maxlength="40" autocomplete="name" required class="input-field" />
+              </div>
+
+              <div class="form-row-2">
+                <div class="form-group">
+                  <label for="guestDeptInput">Department <span class="label-optional">optional</span></label>
+                  <select id="guestDeptInput" class="input-field select-field">
+                    <option value="CSE" selected>CSE (Computer Science)</option>
+                    <option value="IT">IT (Information Technology)</option>
+                    <option value="ECE">ECE (Electronics & Comm)</option>
+                    <option value="EEE">EEE (Electrical & Electronics)</option>
+                    <option value="AI & DS">AI & Data Science</option>
+                    <option value="Mechanical">Mechanical Engineering</option>
+                    <option value="Robotics & Auto">Robotics & Automation</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="guestYearInput">Year <span class="label-optional">optional</span></label>
+                  <select id="guestYearInput" class="input-field select-field">
+                    <option value="1st Year" selected>1st Year</option>
+                    <option value="2nd Year">2nd Year</option>
+                    <option value="3rd Year">3rd Year</option>
+                    <option value="4th Year">4th Year</option>
+                  </select>
+                </div>
+              </div>
+
+              <div id="guestErrorMsg" class="form-alert hidden"></div>
+
+              <button type="submit" class="btn btn-main btn-lg full-width" id="guestStartBtn">
+                <span id="guestStartBtnLabel">Start Quiz as Guest</span>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+              </button>
+
+              <p class="guest-foot-note">Your name is only used to label your score on the leaderboard.</p>
+            </form>
+
             <!-- Login Form -->
-            <form id="loginForm" class="auth-form-body">
+            <form id="loginForm" class="auth-form-body hidden">
               <div class="form-group">
                 <label for="loginEmail">Student Email</label>
                 <input type="email" id="loginEmail" placeholder="student@college.edu" required class="input-field" />
@@ -148,7 +192,7 @@
                 </button>
                 
                 <button type="button" id="guestEnterBtn" class="text-link-btn">
-                  Take quiz as Guest (Callsign entry at end)
+                  No account? Take the quiz in Guest Mode
                 </button>
               </div>
             </form>
@@ -237,7 +281,7 @@
 
             <div class="entry-cta-stack">
               <button id="authenticatedEnterQuizBtn" class="btn btn-main btn-lg full-width">
-                <span>Enter Quiz (25 Min Timer)</span>
+                <span id="authenticatedEnterQuizLabel">Enter Quiz</span>
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
               </button>
               
@@ -250,15 +294,15 @@
         <div class="quiz-info-pills">
           <div class="info-pill-item">
             <span class="info-icon">⏱️</span>
-            <span>Self-Timed</span>
+            <span id="pillTimeLimit">Self-timed</span>
           </div>
           <div class="info-pill-item">
             <span class="info-icon">🎯</span>
-            <span>25 Total Marks</span>
+            <span id="pillMarks">Total marks</span>
           </div>
           <div class="info-pill-item">
             <span class="info-icon">📊</span>
-            <span>Instant Rank Update</span>
+            <span>Instant rank update</span>
           </div>
         </div>
 
@@ -322,15 +366,20 @@
           <div class="trophy-badge">🏆</div>
           <div>
             <h2 id="lbModalTitle" class="modal-heading">Student Leaderboard</h2>
-            <p class="modal-sub">Applications of Digital Electronics Academic Standings</p>
+            <p class="modal-sub" id="lbModalSub">Final marks of everyone who finished the quiz</p>
           </div>
         </div>
         <button id="closeLeaderboardBtn" class="modal-close-btn" aria-label="Close dialog">&times;</button>
       </div>
 
+      <!-- Subject filter: one board per subject, plus a combined view -->
+      <div class="lb-subject-tabs" id="lbSubjectTabs" role="tablist" aria-label="Leaderboard subject filter">
+        <!-- Built by script.js from /api/quizzes -->
+      </div>
+
       <div class="realtime-status-banner">
         <span class="status-indicator-dot"></span>
-        <span>Realtime Sync: Leaderboard updates immediately upon quiz submission</span>
+        <span id="lbStatusText">Marks are posted to this board the moment a quiz is submitted</span>
       </div>
 
       <!-- Clean Academic Table -->
@@ -338,15 +387,16 @@
         <table class="academic-table" id="leaderboardTable">
           <thead>
             <tr>
-              <th style="width: 70px;">S.no</th>
+              <th style="width: 62px;">Rank</th>
               <th>Name</th>
-              <th>Department</th>
-              <th style="text-align: right; width: 100px;">Score</th>
+              <th class="col-dept">Department</th>
+              <th class="col-time" style="text-align: right; width: 82px;">Time</th>
+              <th style="text-align: right; width: 96px;">Marks</th>
             </tr>
           </thead>
           <tbody id="leaderboardBody">
             <tr>
-              <td colspan="4" class="table-empty-cell">
+              <td colspan="5" class="table-empty-cell">
                 <div class="table-loading-spinner"></div>
                 Loading latest student ranks…
               </td>
